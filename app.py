@@ -11,4 +11,14 @@ def apply_caching(response):
 
 @app.route('/')
 def home():
-    return "home"
+    return def home():
+        return """<!DOCTYPE html>
+                    <html>
+                        <head>
+                            <title>ApiDirectory</title>
+                        </head>
+                        <body>
+                        HomePage
+                        <img src="https://f001.backblazeb2.com/file/project0/Dolan.jpg" alt="Une image de licorne :)" height="80" width="200" />
+                        </body>
+                        </html>"""
