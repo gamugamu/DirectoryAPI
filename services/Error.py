@@ -14,14 +14,14 @@ class Error(Enum):
 
     def asDescription(error):
         description = [
-            "erreur non identifiée",
-            "succès requête",
-            "Clef API incorrect",
-            "Le token est invalide",
-            "Mot de passe invalide",
-            "Password invalide",
-            "Le token est invalide (logged)",
-            "Permission interdite"
+            "error unidentified",
+            "request success",
+            "wrong API key",
+            "invalid token",
+            "invalid email",
+            "invalid password",
+            "invalid token (logged)",
+            "unauthorised"
             ]
         desc                = ErrorDescription()
         desc.code           = error.value

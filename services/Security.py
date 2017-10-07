@@ -1,12 +1,14 @@
 # coding: utf8
-
-import base64
 import datetime
-from Error import Error
+import base64
+import uuid
+
 from enum import Enum
 from Crypto import Random
 from Crypto.Cipher import AES
 
+import Dbb
+from Error import Error
 
 class SecurityLevel(Enum):
     NONE        = 0
@@ -15,9 +17,14 @@ class SecurityLevel(Enum):
     SUPERUSER   = 3
 
 class Token():
-    secretKey   = ""
-    dateLimit   = ""
-    right       = ""
+
+    def __init__(self):
+        self.secret_uuid    = uuid.uuid4().hex
+        self.date_limit     = ""
+        self.right          = SecurityLevel.NONE
+
+    def description(self):
+        return str(self.secret_uuid) + "|" + str(self.right) + "|" + self.date_limit
 
 AKEY    = 'd872eebd3967a9a00bdcb7235b491d87'
 iv      = 'key-directoryAPI'
@@ -35,8 +42,10 @@ def decrypt(cipher):
 def check_if_token_allow_access(request, securityLvl):
     crypted_token_request   = request.headers.get('Token-Request')
     try:
+        print crypted_token_request
         token_request           = decrypt(str(crypted_token_request))
-    except:
+    except Exception as e:
+        print(e)
         return Error.INVALID_APIKEY
 
     if securityLvl == SecurityLevel.UNAUTH:
@@ -50,10 +59,13 @@ def check_if_token_allow_access(request, securityLvl):
 
 def generateToken(isValid, securityLvl):
     token = Token()
-
+    print "generate token"
     if isValid == True:
         token.secretKey = ""
         token.dateLimit = ""
         token.right     = securityLvl.value
+        Dbb.volatil_store(typeKey="TOKEN", key=token.description(), storeDict=token.dateLimit, time=100)
+        print "true"
 
+    print "stored"
     return token
