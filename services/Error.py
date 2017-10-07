@@ -14,6 +14,8 @@ class Error(Enum):
     TOKEN_HEADER_MISSING        = 8
     TOKEN_REQ_HEADER_MISSING    = 9
     INVALID_JSON                = 10
+    USER_ALREADY_EXIST          = 11
+    USER_NOT_FOUND              = 12
 
     def asDescription(error):
         description = [
@@ -27,7 +29,8 @@ class Error(Enum):
             "unauthorised",
             "token key missing in header. Please read the documentation",
             "token-request key missing in header. Please read the documentation",
-            "invalid json"
+            "invalid json",
+            "this account has already been taken. Please use another"
             ]
         desc                = ErrorDescription()
         desc.code           = error.value

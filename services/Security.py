@@ -38,19 +38,28 @@ class Token():
     def as_dict(self):
         return {"hash" : self.description(), "dateLimit" :  self.date_limit, "right" : str(self.right)}
 
-#private
 def encrypt(message):
     obj = AES.new(AKEY, AES.MODE_CFB, iv)
     return base64.urlsafe_b64encode(obj.encrypt(message))
-#private
+
 def decrypt(cipher):
     obj2 = AES.new(AKEY, AES.MODE_CFB, iv)
     return obj2.decrypt(base64.urlsafe_b64decode(cipher))
 
-#public
+def decrypt_user_password(crypted_password):
+    try:
+        decrypt_pass = decrypt(str(crypted_password))
+            # security level
+        if AKEY in decrypt_pass:
+            return Error.SUCCESS, decrypt_pass.replace(AKEY + "|", "")
+        else:
+            return Error.INVALID_APIKEY, ""
+    except Exception as e:
+        print(e)
+        return Error.INVALID_APIKEY
+
 def check_if_token_allow_access(request, securityLvl):
     # demande de token
-    print request.headers
     if securityLvl == SecurityLevel.NONE:
         if TOKEN_REQU_HEADER in request.headers:
             crypted_token_request = request.headers.get(TOKEN_REQU_HEADER)
@@ -72,7 +81,7 @@ def check_if_token_allow_access(request, securityLvl):
         ## securityLvl <= SecurityLevel.UNAUTH:
         if TOKEN_HEADER in request.headers:
             token_key  = request.headers.get(TOKEN_HEADER)
-            token      = Dbb.valueForKey(typeKey=Type.TOKEN.name, key=token_key)
+            token      = Dbb.value_for_key(typeKey=Type.TOKEN.name, key=token_key)
             if token == None:
                 return Error.INVALID_TOKEN
             else:

@@ -38,3 +38,13 @@ def createaccount():
     errorDesc   = Security.Error.asDescription(error)
 
     return json.dumps({"error" : errorDesc.__dict__})
+
+@app.route(version_uri + 'login', methods=['POST'])
+def login():
+    securityLvl = Security.SecurityLevel.UNAUTH
+    error       = Security.check_if_token_allow_access(request, securityLvl)
+    error, user = Login.login(from_error=error, request=request)
+
+    errorDesc   = Security.Error.asDescription(error)
+
+    return json.dumps({"error" : errorDesc.__dict__, "user" : user})
