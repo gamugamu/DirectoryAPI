@@ -13,6 +13,7 @@ class Error(Enum):
     NOT_PERMITTED               = 7
     TOKEN_HEADER_MISSING        = 8
     TOKEN_REQ_HEADER_MISSING    = 9
+    INVALID_JSON                = 10
 
     def asDescription(error):
         description = [
@@ -25,7 +26,8 @@ class Error(Enum):
             "invalid token (logged)",
             "unauthorised",
             "token key missing in header. Please read the documentation",
-            "token-request key missing in header. Please read the documentation"
+            "token-request key missing in header. Please read the documentation",
+            "invalid json"
             ]
         desc                = ErrorDescription()
         desc.code           = error.value

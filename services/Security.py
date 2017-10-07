@@ -14,7 +14,7 @@ from Error import Error
 
 AKEY    = 'd872eebd3967a9a00bdcb7235b491d87'
 iv      = 'key-directoryAPI'
-TOKEN_TIME_EXPIRATION_SEC   = 1800 # 30 minutes
+TOKEN_TIME_EXPIRATION_SEC   = 4800 # 30 minutes
 Fa01_DATE_FORMAT            = "%Y-%m-%d_%H:%M:%S"
 TOKEN_REQU_HEADER           = "token-request"
 TOKEN_HEADER                = "token"
@@ -36,7 +36,7 @@ class Token():
         return str(self.secret_uuid) + "|" + str(self.right) + "|" + self.date_limit
 
     def as_dict(self):
-        return {"secretKey" : self.description(), "dateLimit" :  self.date_limit, "right" : str(self.right)}
+        return {"hash" : self.description(), "dateLimit" :  self.date_limit, "right" : str(self.right)}
 
 #private
 def encrypt(message):
@@ -50,6 +50,7 @@ def decrypt(cipher):
 #public
 def check_if_token_allow_access(request, securityLvl):
     # demande de token
+    print request.headers
     if securityLvl == SecurityLevel.NONE:
         if TOKEN_REQU_HEADER in request.headers:
             crypted_token_request = request.headers.get(TOKEN_REQU_HEADER)

@@ -4,6 +4,7 @@ from flask import Flask
 from flask import Response
 from flask import request, url_for
 from services import Security
+from services import Login
 
 import json
 
@@ -26,16 +27,14 @@ def askToken():
     error       = Security.check_if_token_allow_access(request, securityLvl)
     token       = Security.generateToken(error.value == Security.Error.SUCCESS.value, securityLvl)
     errorDesc   = Security.Error.asDescription(error)
-    print token.as_dict()
 
     return json.dumps({"token" : token.as_dict(), "error" : errorDesc.__dict__})
 
-@app.route(version_uri + 'createaccount')
+@app.route(version_uri + 'createaccount', methods=['POST'])
 def createaccount():
     securityLvl = Security.SecurityLevel.UNAUTH
     error       = Security.check_if_token_allow_access(request, securityLvl)
+    error       = Login.create_account(from_error=error, request=request)
     errorDesc   = Security.Error.asDescription(error)
-
-    print errorDesc.__dict__
 
     return json.dumps({"error" : errorDesc.__dict__})
