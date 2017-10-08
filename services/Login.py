@@ -11,10 +11,11 @@ from JSONValidator import validate_json
 
 class User:
     def __init__(self, id="", email="", name="", group=[]):
-        self.id     = id
-        self.email  = email
-        self.name   = name
-        self.group  = group
+        self.id                 = id
+        self.email              = email
+        self.name               = name
+        self.group              = group
+        self._secret_password   = ""
 
 def add_new_user(email, loginData):
     newUser         = User(email=email)
@@ -23,7 +24,8 @@ def add_new_user(email, loginData):
     if exist:
         return (Error.USER_ALREADY_EXIST, User().__dict__)
     else:
-        newUser.id = Dbb.generated_key("USER", email)
+        newUser.id                  = Dbb.generated_key("USER", email)
+        newUser._secret_password    = loginData["cryptpassword"]
         Dbb.store_collection("USER", email, newUser.__dict__)
 
         return (Error.SUCCESS, User().__dict__)
@@ -50,27 +52,39 @@ def perform_check_validity(from_error, request, callBack):
 
         if error == Error.SUCCESS:
             #Vérification clès API
-            crypt_passw         = data["loginrequest"]["cryptpassword"]
-            error, decry_passw  = Security.decrypt_user_password(crypt_passw)
+            login_request       = data["loginrequest"]
 
-            if error == Error.SUCCESS:
-                #TODO validation type
+            if set(("cryptpassword", "email")) <= set(login_request):
+                crypt_passw      = login_request["cryptpassword"]
+                email            =  data["loginrequest"]["email"]
 
-                #Validation password:
-                email       =  data["loginrequest"]["email"]
-                loginData   = data["loginrequest"]
+                error, decry_passw  = Security.decrypt_user_password(crypt_passw)
+                decrpt_passw = decry_passw.rsplit('|')
 
-                #Validation email format
-                if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-                    return (Error.INVALID_USER_EMAIL, User().__dict__)
+                #0 password, 1 email, 2 date
+                if len(decrpt_passw) == 3 and decrpt_passw[1] == email:
+                    if error == Error.SUCCESS:
+                        #TODO validation type
 
-                #Validation password format. Note: vérifie d'abord que l'email n'existe pas.
-                if not re.match(r"^(?=.*?\d)(?=.*?[A-Z])(?=.*?[a-z])[A-Za-z\d]{10,}$", decry_passw):
-                    return (Error.INVALID_USER_PASSWORD, User().__dict__)
+                        #Validation email format
+                        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+                            return (Error.INVALID_USER_EMAIL, User().__dict__)
 
-                #Validation uniquness
-                return callBack(email, loginData)
+                        #Validation password format. Note: vérifie d'abord que l'email n'existe pas.
+                        if not re.match(r"^(?=.*?\d)(?=.*?[A-Z])(?=.*?[a-z])[A-Za-z\d]{10,}$", decrpt_passw[0]):
+                            return (Error.INVALID_USER_PASSWORD, User().__dict__)
 
+                        #Validation uniquness
+                        return callBack(email, login_request)
+                    #token invalid. Email n'est pas retrouvé.
+                else:
+                    return (Error.INVALID_TOKEN, User().__dict__)
+
+            else:
+                # clès du json mauvaises
+                return (Error.INVALID_JSON_TYPE, User().__dict__)
+        # mauvais json
         return (error, User().__dict__)
     else:
+        # erreur déjà présente. Pas de check
         return (from_error, User().__dict__)

@@ -14,10 +14,14 @@ from Error import Error
 
 AKEY    = 'd872eebd3967a9a00bdcb7235b491d87'
 iv      = 'key-directoryAPI'
-TOKEN_TIME_EXPIRATION_SEC   = 10000
-Fa01_DATE_FORMAT            = "%Y-%m-%d_%H:%M:%S"
-TOKEN_REQU_HEADER           = "token-request"
-TOKEN_HEADER                = "token"
+
+s_AKEY    = 'W8$04K5D98WA6WIIGRMPREOC3GTAYCV2'
+s_iv      = 'black_cerberus|*'
+
+TOKEN_UNAUTH_TIME_EXPIRATION_SEC    = 10 # secondes
+Fa01_DATE_FORMAT                    = "%Y-%m-%d_%H:%M:%S"
+TOKEN_REQU_HEADER                   = "token-request"
+TOKEN_HEADER                        = "token"
 
 class SecurityLevel(Enum):
     NONE        = 0
@@ -36,14 +40,21 @@ class Token():
         return str(self.secret_uuid) + "|" + str(self.right) + "|" + self.date_limit
 
     def as_dict(self):
-        return {"hash" : self.description(), "dateLimit" :  self.date_limit, "right" : str(self.right)}
+        return {"hash" : self.secret_description(), "dateLimit" :  self.date_limit, "right" : str(self.right)}
 
-def encrypt(message):
-    obj = AES.new(AKEY, AES.MODE_CFB, iv)
+    def secret_description(self):
+        return encrypt(self.description(), akey=s_AKEY, _iv=s_iv)
+
+    @staticmethod
+    def decrypt_secret_description(token_value):
+        return decrypt(token_value, akey=s_AKEY, _iv=s_iv)
+
+def encrypt(message, akey=AKEY, _iv=iv):
+    obj = AES.new(akey, AES.MODE_CFB, _iv)
     return base64.urlsafe_b64encode(obj.encrypt(message))
 
-def decrypt(cipher):
-    obj2 = AES.new(AKEY, AES.MODE_CFB, iv)
+def decrypt(cipher, akey=AKEY, _iv=iv):
+    obj2 = AES.new(akey, AES.MODE_CFB, _iv)
     return obj2.decrypt(base64.urlsafe_b64decode(cipher))
 
 def decrypt_user_password(crypted_password):
@@ -81,23 +92,35 @@ def check_if_token_allow_access(request, securityLvl):
         ## securityLvl <= SecurityLevel.UNAUTH:
         if TOKEN_HEADER in request.headers:
             token_key  = request.headers.get(TOKEN_HEADER)
-            token      = Dbb.value_for_key(typeKey=Type.TOKEN.name, key=token_key)
-            if token == None:
-                return Error.INVALID_TOKEN
+            decrypted_token = Token.decrypt_secret_description(str(token_key))
+            ip_request      = request.environ['REMOTE_ADDR']
+
+            if ip_request in decrypted_token:
+                # l'ip du token correspond au clien de la requete.
+                # Est-t'il repertoirié?
+                token = Dbb.value_for_key(typeKey=Type.TOKEN.name, key=token_key)
+                if token == None:
+                    # ne devrait pas arriver. Sauf si une personne est capable de générer de faux
+                    # ticket.
+                    return Error.INVALID_TOKEN
+                else:
+                    return Error.SUCCESS
             else:
-                return Error.SUCCESS
+                # l'ip de la requete de correspond pas à celle du token.
+                return Error.INVALID_TOKEN
         else:
             return Error.TOKEN_HEADER_MISSING
     # n'arrive jamais
     return Error.none
 
-def generateToken(isValid, securityLvl):
+def generateToken(isValid, securityLvl, from_request):
     token = Token()
 
     if isValid == True:
-        token.secret_uuid   = uuid.uuid4().hex
-        token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
+        token.secret_uuid   = uuid.uuid4().hex + "|" + from_request.environ["REMOTE_ADDR"]
+        token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
         token.right         = securityLvl.value
-        Dbb.volatil_store(typeKey=Type.TOKEN.name, key=token.description(), storeDict=token.date_limit, time=TOKEN_TIME_EXPIRATION_SEC)
+
+        Dbb.volatil_store(typeKey=Type.TOKEN.name, key=token.secret_description(), storeDict=token.date_limit, time=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)
 
     return token

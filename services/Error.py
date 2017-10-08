@@ -14,6 +14,7 @@ class Error(Enum):
     TOKEN_REQ_HEADER_MISSING    = "21"
     TOKEN_HEADER_MISSING        = "22"
     INVALID_JSON                = "23"
+    INVALID_JSON_TYPE           = "24"
     USER_ALREADY_EXIST          = "30"
     USER_NOT_FOUND              = "31"
 
@@ -23,13 +24,14 @@ class Error(Enum):
             "1" : "request success",
             "2" : "wrong API key",
             "3" : "invalid token",
-            "10" : "invalid email",
-            "11" : "invalid password",
+            "10" : "invalid email format",
+            "11" : "invalid password format",
             "12" : "invalid token (logged)",
             "20" : "unauthorised",
             "21" : "token key missing in header. Please read the documentation",
             "22" : "token-request key missing in header. Please read the documentation",
             "23" : "invalid json",
+            "24" : "invalid json, missing required keys. Please read the documentation",
             "30" : "this account has already been taken. Please use another",
             "31" : "User not found"
             }
