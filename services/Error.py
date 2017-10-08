@@ -3,35 +3,36 @@ from enum import Enum
 
 #@unique
 class Error(Enum):
-    NONE                        = 0
-    SUCCESS                     = 1
-    INVALID_APIKEY              = 2
-    INVALID_TOKEN               = 3
-    INVALID_USER_EMAIL          = 4
-    INVALID_USER_PASSWORD       = 5
-    INVALID_TOKEN_LOGGED        = 6
-    NOT_PERMITTED               = 7
-    TOKEN_HEADER_MISSING        = 8
-    TOKEN_REQ_HEADER_MISSING    = 9
-    INVALID_JSON                = 10
-    USER_ALREADY_EXIST          = 11
-    USER_NOT_FOUND              = 12
+    NONE                        = "0"
+    SUCCESS                     = "1"
+    INVALID_APIKEY              = "2"
+    INVALID_TOKEN               = "3"
+    INVALID_USER_EMAIL          = "10"
+    INVALID_USER_PASSWORD       = "11"
+    INVALID_TOKEN_LOGGED        = "12"
+    NOT_PERMITTED               = "20"
+    TOKEN_REQ_HEADER_MISSING    = "21"
+    TOKEN_HEADER_MISSING        = "22"
+    INVALID_JSON                = "23"
+    USER_ALREADY_EXIST          = "30"
+    USER_NOT_FOUND              = "31"
 
     def asDescription(error):
-        description = [
-            "error unidentified",
-            "request success",
-            "wrong API key",
-            "invalid token",
-            "invalid email",
-            "invalid password",
-            "invalid token (logged)",
-            "unauthorised",
-            "token key missing in header. Please read the documentation",
-            "token-request key missing in header. Please read the documentation",
-            "invalid json",
-            "this account has already been taken. Please use another"
-            ]
+        description = {
+            "0" : "error unidentified",
+            "1" : "request success",
+            "2" : "wrong API key",
+            "3" : "invalid token",
+            "10" : "invalid email",
+            "11" : "invalid password",
+            "12" : "invalid token (logged)",
+            "20" : "unauthorised",
+            "21" : "token key missing in header. Please read the documentation",
+            "22" : "token-request key missing in header. Please read the documentation",
+            "23" : "invalid json",
+            "30" : "this account has already been taken. Please use another",
+            "31" : "User not found"
+            }
         desc                = ErrorDescription()
         desc.code           = error.value
         desc.description    = description[error.value]

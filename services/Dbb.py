@@ -8,23 +8,28 @@ def volatil_store(typeKey, key, storeDict, time):
     r.set(key, storeDict, ex=time)
     return key
 
-def store_collection_if_unique(typeKey, key, storeDict):
-    key             = typeKey + "_" + key
-    already_exist   = r.hgetall(key)
+def generated_key(typeKey, key):
+    return typeKey + "_" + key
 
-    if already_exist != None:
-        return 0
-    else:
-        r.hmset(key, storeDict)
-        return 1
+def is_key_exist(typeKey, key):
+    return r.exists(generated_key(typeKey, key))
+
+def store_collection(typeKey, key, storeDict):
+    key             = generated_key(typeKey, key)
+    already_exist   = r.exists(key)
+
+    r.hmset(key, storeDict)
 
 def collection_for_Key(typeKey="", key=""):
     if key == None:
         return None
-    elif typeKey == "":
-        return r.hgetall(key)
+
+    already_exist = r.exists(generated_key(typeKey, key))
+
+    if already_exist == False:
+        return None
     else:
-        return r.hgetall(typeKey + "_" + key)
+        return r.hgetall(generated_key(typeKey, key))
 
 
 def value_for_key(typeKey="", key=""):
@@ -33,4 +38,4 @@ def value_for_key(typeKey="", key=""):
     elif typeKey == "":
         return r.get(key)
     else:
-        return r.get(typeKey + "_" + key)
+        return r.get(generated_key(typeKey, key))

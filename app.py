@@ -46,5 +46,6 @@ def login():
     error, user = Login.login(from_error=error, request=request)
 
     errorDesc   = Security.Error.asDescription(error)
+    print "login ", user
 
-    return json.dumps({"error" : errorDesc.__dict__, "user" : user})
+    return json.dumps({"error" : errorDesc.__dict__, "user" : user, "token" : "token.as_dict()"})
