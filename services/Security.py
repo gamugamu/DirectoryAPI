@@ -19,6 +19,8 @@ s_AKEY    = 'W8$04K5D98WA6WIIGRMPREOC3GTAYCV2'
 s_iv      = 'black_cerberus|*'
 
 TOKEN_UNAUTH_TIME_EXPIRATION_SEC    = 10 # secondes
+TOKEN_AUTH_TIME_EXPIRATION_SEC      = 10000 # secondes
+
 Fa01_DATE_FORMAT                    = "%Y-%m-%d_%H:%M:%S"
 TOKEN_REQU_HEADER                   = "token-request"
 TOKEN_HEADER                        = "token"
@@ -34,7 +36,7 @@ class Token():
     def __init__(self):
         self.secret_uuid    = ""
         self.date_limit     = ""
-        self.right          = SecurityLevel.NONE
+        self.right          = SecurityLevel.NONE.value
 
     def description(self):
         return str(self.secret_uuid) + "|" + str(self.right) + "|" + self.date_limit
@@ -94,7 +96,7 @@ def check_if_token_allow_access(request, securityLvl):
             token_key  = request.headers.get(TOKEN_HEADER)
             decrypted_token = Token.decrypt_secret_description(str(token_key))
             ip_request      = request.environ['REMOTE_ADDR']
-
+            print decrypted_token
             if ip_request in decrypted_token:
                 # l'ip du token correspond au clien de la requete.
                 # Est-t'il repertoirié?
@@ -124,3 +126,19 @@ def generateToken(isValid, securityLvl, from_request):
         Dbb.volatil_store(typeKey=Type.TOKEN.name, key=token.secret_description(), storeDict=token.date_limit, time=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)
 
     return token
+
+def generate_Session_token(secret_keys, from_request):
+    token = Token()
+    token.secret_uuid   = uuid.uuid4().hex + "|" + from_request.environ["REMOTE_ADDR"] + "|" + secret_keys[0] + "|" + secret_keys[1]
+    token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
+    token.right         = SecurityLevel.LOGGED.value
+
+    Dbb.volatil_store(typeKey=Type.TOKEN.name, key=token.secret_description(), storeDict=token.date_limit, time=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)
+
+    return token
+
+def generate_black_token():
+    return Token()
+
+def token_from_header(request):
+    return request.headers[TOKEN_HEADER]

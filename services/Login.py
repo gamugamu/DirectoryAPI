@@ -6,6 +6,7 @@ import json
 from bunch import bunchify
 import Dbb
 import Security
+from Security import SecurityLevel
 
 from JSONValidator import validate_json
 
@@ -44,7 +45,34 @@ def create_account(from_error, request):
     return perform_check_validity(from_error, request, add_new_user)[0]
 
 def login(from_error, request):
-    return perform_check_validity(from_error, request, retrieve_user)
+    error, user = perform_check_validity(from_error, request, retrieve_user)
+
+    if error.value == Error.INVALID_USER_PASSWORD.value:
+        print "WRONG_USER_PASSWORD 1"
+        return (Error.WRONG_USER_PASSWORD, user, Security.generate_black_token())
+    else:
+        #check password
+
+        print "pass " + user._secret_password
+        print request
+        data_from_request = validate_json(request)[1]["loginrequest"]["cryptpassword"]
+        print "data ****"
+        print data_from_request
+        error, decrpt_passw = Security.decrypt_user_password(user._secret_password)
+        decrpt_passw        = decrpt_passw.rsplit('|')
+        print "decrpt_passw ****"
+        print decrpt_passw
+        error, check = Security.decrypt_user_password(data_from_request)
+        check        = check.rsplit('|')
+        print "check"
+        print check
+        if decrpt_passw[0] != check[0]:
+            print "WRONG_USER_PASSWORD 0"
+            return (Error.WRONG_USER_PASSWORD, User(), new_token)
+
+        new_token           = Security.generate_Session_token(decrpt_passw, request)
+
+        return (error, user, new_token)
 
 def perform_check_validity(from_error, request, callBack):
     if from_error == Error.SUCCESS:

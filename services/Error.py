@@ -10,6 +10,7 @@ class Error(Enum):
     INVALID_USER_EMAIL          = "10"
     INVALID_USER_PASSWORD       = "11"
     INVALID_TOKEN_LOGGED        = "12"
+    WRONG_USER_PASSWORD         = "13"
     NOT_PERMITTED               = "20"
     TOKEN_REQ_HEADER_MISSING    = "21"
     TOKEN_HEADER_MISSING        = "22"
@@ -27,6 +28,7 @@ class Error(Enum):
             "10" : "invalid email format",
             "11" : "invalid password format",
             "12" : "invalid token (logged)",
+            "13" : "wrong password for this account",
             "20" : "unauthorised",
             "21" : "token key missing in header. Please read the documentation",
             "22" : "token-request key missing in header. Please read the documentation",
