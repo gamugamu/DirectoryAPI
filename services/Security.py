@@ -133,7 +133,7 @@ def generate_Session_token(secret_keys, from_request):
     token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
     token.right         = SecurityLevel.LOGGED.value
 
-    Dbb.volatil_store(typeKey=Type.TOKEN.name, key=token.secret_description(), storeDict=token.date_limit, time=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)
+    Dbb.volatil_store(typeKey=Type.SESSION.name, key=token.secret_description(), storeDict=token.date_limit, time=TOKEN_AUTH_TIME_EXPIRATION_SEC)
 
     return token
 

@@ -1,12 +1,14 @@
 # coding: utf8
 from Error import Error
-import re
-
-import json
 from bunch import bunchify
+
+import re
+import json
 import Dbb
+
 import Security
 from Security import SecurityLevel
+from TypeRedis import Type
 
 from JSONValidator import validate_json
 
@@ -20,19 +22,19 @@ class User:
 
 def add_new_user(email, loginData):
     newUser         = User(email=email)
-    exist           = Dbb.is_key_exist("USER", email)
+    exist           = Dbb.is_key_exist(Type.USER.name, email)
 
     if exist:
         return (Error.USER_ALREADY_EXIST, User().__dict__)
     else:
-        newUser.id                  = Dbb.generated_key("USER", email)
+        newUser.id                  = Dbb.generated_key(Type.USER, email)
         newUser._secret_password    = loginData["cryptpassword"]
-        Dbb.store_collection("USER", email, newUser.__dict__)
+        Dbb.store_collection(Type.USER.name, email, newUser.__dict__)
 
         return (Error.SUCCESS, User().__dict__)
 
 def retrieve_user(email, loginData):
-    user = Dbb.collection_for_Key("USER", email)
+    user = Dbb.collection_for_Key(Type.USER.name, email)
 
     if user != None:
         #Note: redis ne sauvegarde que des dictionnaires. Le type est perdu.
@@ -66,11 +68,11 @@ def login(from_error, request):
         check        = check.rsplit('|')
         print "check"
         print check
+
         if decrpt_passw[0] != check[0]:
-            print "WRONG_USER_PASSWORD 0"
             return (Error.WRONG_USER_PASSWORD, User(), new_token)
 
-        new_token           = Security.generate_Session_token(decrpt_passw, request)
+        new_token = Security.generate_Session_token(decrpt_passw, request)
 
         return (error, user, new_token)
 

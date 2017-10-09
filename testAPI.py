@@ -41,7 +41,7 @@ print "========== launching test on " + urlRoot + " API. ==========="
 print "==========" +url + "asktoken" + "==========="
 
 r = requests.get(url + "asktoken", headers=headers_requestToken)
-print r.content
+print r.content + "\n"
 data    = json.loads(r.content)
 token   = data["token"]["hash"]
 
@@ -53,17 +53,17 @@ email               = "jojo@hotmail.fr" #str(uuid.uuid4())[0:6] + "@gmail.com"
 password            = "superpassE0"
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
-print r.content
+print r.content + "\n"
 
 print "==========" + url + "login (fail)" + "==========="
 crypted_password    = encrypt(AKEY + "|" + "fdklfdp" + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
-print r.content
+print r.content + "\n"
 
 print "==========" + url + "login (success)" + "==========="
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
-print r.content
+print r.content + "\n"
 
 #data=json.dumps(payload),
 
