@@ -1,10 +1,17 @@
 # coding: utf8
 from bunch import unbunchify
+from bunch import Bunch
 
-def sanityse(type):
-    dict = unbunchify(type)
-    for key in dict.keys():
+def sanityse(type_data):
+    if type(type_data) is Bunch:
+        _dict = unbunchify(type_data)
+    elif type(type_data) is dict:
+        _dict = type_data
+    else:
+        _dict = type_data.__dict__
+
+    for key in _dict.keys():
         if key[0] == "_":
-            del dict[key]
+            del _dict[key]
 
-    return dict
+    return _dict

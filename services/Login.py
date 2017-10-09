@@ -8,7 +8,7 @@ import Dbb
 
 import Security
 from Security import SecurityLevel
-from TypeRedis import Type
+from TypeRedis import Type, Login_Req as LR
 
 from JSONValidator import validate_json
 
@@ -27,8 +27,9 @@ def add_new_user(email, loginData):
     if exist:
         return (Error.USER_ALREADY_EXIST, User().__dict__)
     else:
-        newUser.id                  = Dbb.generated_key(Type.USER, email)
-        newUser._secret_password    = loginData["cryptpassword"]
+        newUser.id                  = Dbb.generated_key(Type.USER.name, email)
+        #0 password, 1 email_token, 2 date, 3 email_user
+        newUser._secret_password    = Security.encrypt_with_security_level(loginData[0], SecurityLevel.LOGGED)
         Dbb.store_collection(Type.USER.name, email, newUser.__dict__)
 
         return (Error.SUCCESS, User().__dict__)
@@ -44,77 +45,72 @@ def retrieve_user(email, loginData):
 
 
 def create_account(from_error, request):
-    return perform_check_validity(from_error, request, add_new_user)[0]
+    error, decrpt_passw = login_request_from_data(request, SecurityLevel.UNAUTH)
+    return perform_check_validity(error, request, add_new_user, decrpt_passw)[0]
 
 def login(from_error, request):
-    error, user = perform_check_validity(from_error, request, retrieve_user)
+    error, token_decrpt_passw = login_request_from_data(request, SecurityLevel.UNAUTH)
+    error, user = perform_check_validity(error, request, retrieve_user, token_decrpt_passw)
 
-    if error.value == Error.INVALID_USER_PASSWORD.value:
-        print "WRONG_USER_PASSWORD 1"
-        return (Error.WRONG_USER_PASSWORD, user, Security.generate_black_token())
-    else:
+    if error.value == Error.SUCCESS.value:
         #check password
+        user_decrpt_passw = Security.decrypt_with_security_level(user._secret_password, SecurityLevel.LOGGED)
+        #print "COMPARE: ", token_decrpt_passw, "XXX", user._secret_password, "XXX", user_decrpt_passw
 
-        print "pass " + user._secret_password
-        print request
-        data_from_request = validate_json(request)[1]["loginrequest"]["cryptpassword"]
-        print "data ****"
-        print data_from_request
-        error, decrpt_passw = Security.decrypt_user_password(user._secret_password)
-        decrpt_passw        = decrpt_passw.rsplit('|')
-        print "decrpt_passw ****"
-        print decrpt_passw
-        error, check = Security.decrypt_user_password(data_from_request)
-        check        = check.rsplit('|')
-        print "check"
-        print check
+        #0 password, 1 email_token, 2 date, 3 email_user
+        #print token_decrpt_passw[0], user_decrpt_passw, token_decrpt_passw[0] == user_decrpt_passw
+        if token_decrpt_passw[0] == user_decrpt_passw:
+            #new_token = Security.generate_Session_token(user_decrpt_passw, request)
+            session_token = Security.generate_Session_token(token_decrpt_passw, request)
+            return (Error.SUCCESS, user, session_token)
+        else:
+            # Le mot-de-passe n'est pas celui du compte.
+            return (Error.WRONG_USER_PASSWORD, User(), Security.generate_blank_token())
+    else:
+        return (error, user, Security.generate_blank_token())
 
-        if decrpt_passw[0] != check[0]:
-            return (Error.WRONG_USER_PASSWORD, User(), new_token)
-
-        new_token = Security.generate_Session_token(decrpt_passw, request)
-
-        return (error, user, new_token)
-
-def perform_check_validity(from_error, request, callBack):
+def perform_check_validity(from_error, request, callBack, login_request):
     if from_error == Error.SUCCESS:
-        error, data = validate_json(request)
+        #0 password, 1 email_token, 2 date, 3 email_user
+        password    = login_request[0]
+        token_email = login_request[1]
+        user_email  = login_request[3]
 
-        if error == Error.SUCCESS:
-            #Vérification clès API
-            login_request       = data["loginrequest"]
+        if token_email == user_email:
+            #Validation email format
+            if not re.match(r"[^@]+@[^@]+\.[^@]+", user_email):
+                return (Error.INVALID_USER_EMAIL, User().__dict__)
 
-            if set(("cryptpassword", "email")) <= set(login_request):
-                crypt_passw      = login_request["cryptpassword"]
-                email            =  data["loginrequest"]["email"]
+            #Validation password format. Note: vérifie d'abord que l'email n'existe pas.
+            if not re.match(r"^(?=.*?\d)(?=.*?[A-Z])(?=.*?[a-z])[A-Za-z\d]{10,}$", password):
+                return (Error.INVALID_USER_PASSWORD, User().__dict__)
 
-                error, decry_passw  = Security.decrypt_user_password(crypt_passw)
-                decrpt_passw = decry_passw.rsplit('|')
-
-                #0 password, 1 email, 2 date
-                if len(decrpt_passw) == 3 and decrpt_passw[1] == email:
-                    if error == Error.SUCCESS:
-                        #TODO validation type
-
-                        #Validation email format
-                        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-                            return (Error.INVALID_USER_EMAIL, User().__dict__)
-
-                        #Validation password format. Note: vérifie d'abord que l'email n'existe pas.
-                        if not re.match(r"^(?=.*?\d)(?=.*?[A-Z])(?=.*?[a-z])[A-Za-z\d]{10,}$", decrpt_passw[0]):
-                            return (Error.INVALID_USER_PASSWORD, User().__dict__)
-
-                        #Validation uniquness
-                        return callBack(email, login_request)
-                    #token invalid. Email n'est pas retrouvé.
-                else:
-                    return (Error.INVALID_TOKEN, User().__dict__)
-
-            else:
-                # clès du json mauvaises
-                return (Error.INVALID_JSON_TYPE, User().__dict__)
-        # mauvais json
-        return (error, User().__dict__)
+            #Validation uniquness
+            return callBack(user_email, login_request)
+        else:
+            #token invalid. Email n'est pas retrouvé.
+            return (Error.INVALID_TOKEN, User().__dict__)
     else:
         # erreur déjà présente. Pas de check
         return (from_error, User().__dict__)
+
+def login_request_from_data(request, SecurityLevel):
+    error, data = validate_json(request)
+
+    if error == Error.SUCCESS:
+        #Vérification clès API
+        login_request = data[LR.loginrequest.name]
+
+        if set((LR.cryptpassword.name, LR.email.name)) <= set(login_request):
+            crypt_passw         = login_request[LR.cryptpassword.name]
+            email               = login_request[LR.email.name]
+            decry_passw         = Security.decrypt_with_security_level(crypt_passw, lvSecurity=SecurityLevel)
+            decrpt_passw        = decry_passw.rsplit('|')
+            decrpt_passw.append(email)
+
+            return (Error.SUCCESS, decrpt_passw)
+        else:
+            # clès du json mauvaises
+            return (Error.INVALID_JSON_TYPE, None)
+    # mauvais json
+    return (error, None)

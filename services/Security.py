@@ -42,7 +42,10 @@ class Token():
         return str(self.secret_uuid) + "|" + str(self.right) + "|" + self.date_limit
 
     def as_dict(self):
-        return {"hash" : self.secret_description(), "dateLimit" :  self.date_limit, "right" : str(self.right)}
+        return {
+            "hash" : self.secret_description(),
+            "dateLimit" :  self.date_limit,
+            "right" : str(self.right)}
 
     def secret_description(self):
         return encrypt(self.description(), akey=s_AKEY, _iv=s_iv)
@@ -59,17 +62,24 @@ def decrypt(cipher, akey=AKEY, _iv=iv):
     obj2 = AES.new(akey, AES.MODE_CFB, _iv)
     return obj2.decrypt(base64.urlsafe_b64decode(cipher))
 
-def decrypt_user_password(crypted_password):
+def encrypt_with_security_level(data_to_encrypt, lvSecurity):
+    _akey    = AKEY if lvSecurity.value == SecurityLevel.UNAUTH.value else s_AKEY
+    _iv      = iv if lvSecurity.value == SecurityLevel.UNAUTH.value else s_iv
+
+    return encrypt(str(data_to_encrypt), _akey, _iv)
+
+def decrypt_with_security_level(data_to_decrypt, lvSecurity):
     try:
-        decrypt_pass = decrypt(str(crypted_password))
+        _akey    = AKEY if lvSecurity.value == SecurityLevel.UNAUTH.value else s_AKEY
+        _iv      = iv if lvSecurity.value == SecurityLevel.UNAUTH.value else s_iv
+
+        decrypt_pass = decrypt(str(data_to_decrypt), _akey, _iv)
             # security level
-        if AKEY in decrypt_pass:
-            return Error.SUCCESS, decrypt_pass.replace(AKEY + "|", "")
-        else:
-            return Error.INVALID_APIKEY, ""
+        return decrypt_pass.replace(_akey + "|", "")
+
     except Exception as e:
         print(e)
-        return Error.INVALID_APIKEY
+        return ""
 
 def check_if_token_allow_access(request, securityLvl):
     # demande de token
@@ -96,7 +106,7 @@ def check_if_token_allow_access(request, securityLvl):
             token_key  = request.headers.get(TOKEN_HEADER)
             decrypted_token = Token.decrypt_secret_description(str(token_key))
             ip_request      = request.environ['REMOTE_ADDR']
-            print decrypted_token
+
             if ip_request in decrypted_token:
                 # l'ip du token correspond au clien de la requete.
                 # Est-t'il repertoirié?
@@ -123,7 +133,11 @@ def generateToken(isValid, securityLvl, from_request):
         token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
         token.right         = securityLvl.value
 
-        Dbb.volatil_store(typeKey=Type.TOKEN.name, key=token.secret_description(), storeDict=token.date_limit, time=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)
+        Dbb.volatil_store(
+            typeKey     = Type.TOKEN.name,
+            key         = token.secret_description(),
+            storeDict   = token.date_limit,
+            time        = TOKEN_UNAUTH_TIME_EXPIRATION_SEC)
 
     return token
 
@@ -133,11 +147,15 @@ def generate_Session_token(secret_keys, from_request):
     token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
     token.right         = SecurityLevel.LOGGED.value
 
-    Dbb.volatil_store(typeKey=Type.SESSION.name, key=token.secret_description(), storeDict=token.date_limit, time=TOKEN_AUTH_TIME_EXPIRATION_SEC)
+    Dbb.volatil_store(
+        typeKey     = Type.SESSION.name,
+        key         = token.secret_description(),
+        storeDict   = token.date_limit,
+        time        = TOKEN_AUTH_TIME_EXPIRATION_SEC)
 
     return token
 
-def generate_black_token():
+def generate_blank_token():
     return Token()
 
 def token_from_header(request):
