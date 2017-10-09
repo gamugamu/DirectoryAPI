@@ -103,14 +103,18 @@ def check_if_token_allow_access(request, securityLvl):
     else:
         ## securityLvl <= SecurityLevel.UNAUTH:
         if TOKEN_HEADER in request.headers:
-            token_key  = request.headers.get(TOKEN_HEADER)
+            token_key       = request.headers.get(TOKEN_HEADER)
             decrypted_token = Token.decrypt_secret_description(str(token_key))
             ip_request      = request.environ['REMOTE_ADDR']
 
             if ip_request in decrypted_token:
                 # l'ip du token correspond au clien de la requete.
                 # Est-t'il repertoirié?
-                token = Dbb.value_for_key(typeKey=Type.TOKEN.name, key=token_key)
+                token_data  = decrypted_token.split("|")
+                right       = token_data[2]
+                type_key    = Type.TOKEN.name if right <= SecurityLevel.UNAUTH.value else Type.SESSION.name
+                token       = Dbb.value_for_key(typeKey=type_key, key=token_key)
+
                 if token == None:
                     # ne devrait pas arriver. Sauf si une personne est capable de générer de faux
                     # ticket.
@@ -143,7 +147,7 @@ def generateToken(isValid, securityLvl, from_request):
 
 def generate_Session_token(secret_keys, from_request):
     token = Token()
-    token.secret_uuid   = uuid.uuid4().hex + "|" + from_request.environ["REMOTE_ADDR"] + "|" + secret_keys[0] + "|" + secret_keys[1]
+    token.secret_uuid   = uuid.uuid4().hex + "|" + from_request.environ["REMOTE_ADDR"]
     token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
     token.right         = SecurityLevel.LOGGED.value
 
@@ -154,6 +158,10 @@ def generate_Session_token(secret_keys, from_request):
         time        = TOKEN_AUTH_TIME_EXPIRATION_SEC)
 
     return token
+
+def remove_Session_token(from_request):
+    token = token_from_header(from_request)
+    return Dbb.remove_value_for_key(Type.SESSION.name, token)
 
 def generate_blank_token():
     return Token()

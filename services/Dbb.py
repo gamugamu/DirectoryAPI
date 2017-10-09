@@ -39,3 +39,11 @@ def value_for_key(typeKey="", key=""):
         return r.get(key)
     else:
         return r.get(generated_key(typeKey, key))
+
+def remove_value_for_key(typeKey="", key=""):
+    if key == None:
+        return False
+    elif typeKey == "":
+        return r.delete(key)
+    else:
+        return r.delete(generated_key(typeKey, key))

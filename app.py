@@ -49,3 +49,12 @@ def login():
     errorDesc           = Security.Error.asDescription(error)
 
     return json.dumps({"error" : errorDesc.__dict__, "user" : Sanityzer.sanityse(user), "token" : token.as_dict()})
+
+@app.route(version_uri + 'logout', methods=['GET'])
+def logout():
+    securityLvl         = Security.SecurityLevel.LOGGED
+    error               = Security.check_if_token_allow_access(request, securityLvl)
+    error               = Login.logout(from_error=error, request=request)
+    errorDesc           = Security.Error.asDescription(error)
+
+    return json.dumps({"error" : errorDesc.__dict__})

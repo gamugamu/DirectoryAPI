@@ -84,6 +84,16 @@ crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + dateti
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
 print r.content + "\n"
 
+token_session = json.loads(r.content)["token"]["hash"]
+print "==========" + url + "logout (success)" + "==========="
+headers_token    = {'content-type': 'application/json', 'token' : token_session}
+r = requests.get(url + "logout", headers=headers_token)
+print r.content + "\n"
+
+print "==========" + url + "logout (fail)" + "==========="
+r = requests.get(url + "logout", headers=headers_token)
+print r.content + "\n"
+
 #data=json.dumps(payload),
 
 #r = requests.get(urlRoot)

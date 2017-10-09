@@ -69,6 +69,14 @@ def login(from_error, request):
     else:
         return (error, user, Security.generate_blank_token())
 
+def logout(from_error, request):
+    if from_error.value == Error.SUCCESS.value:
+        did_succed = Security.remove_Session_token(request)
+         # Note USER_ALREADY_LOGOUT n'arrivera jamais car Security fait un check en amont.
+        return Error.SUCCESS if did_succed else Error.USER_ALREADY_LOGOUT
+    else:
+        return from_error
+
 def perform_check_validity(from_error, request, callBack, login_request):
     if from_error == Error.SUCCESS:
         #0 password, 1 email_token, 2 date, 3 email_user
