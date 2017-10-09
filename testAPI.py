@@ -105,6 +105,12 @@ print "==========" + url + "login (must fail already logged)" + "==========="
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
 print r.content + "\n"
 
+print "==========" + url + "create file - create GROUP (must succeed)" + "==========="
+crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps({}))
+print r.content + "\n"
+
+
 print "==========" + url + "deleteaccount (must succeed)" + "==========="
 r = requests.get(url + "deleteaccount", headers=headers_token)
 print r.content + "\n"

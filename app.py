@@ -6,13 +6,16 @@ from flask import Response
 from flask import request, url_for
 from services import Security
 from services import Login
+from cloud import CloudService
 from helper import Sanityzer
-
-import json
 
 app         = Flask(__name__)
 version     = "0.0.1"
 version_uri = "/rest/"
+
+# Les données ne sont pas stocké sur le même serveur que l'API.
+cloud = CloudService.CloudService()
+cloud.connect_to_cloud()
 
 @app.after_request
 def apply_caching(response):
@@ -66,5 +69,16 @@ def delete_account():
     error               = Security.check_if_token_allow_access(request, securityLvl)
     error               = Login.delete_account(from_error=error, request=request)
     errorDesc           = Security.Error.asDescription(error)
+
+    return json.dumps({"error" : errorDesc.__dict__})
+
+@app.route(version_uri + 'createfile', methods=['POST'])
+def create_file():
+    securityLvl         = Security.SecurityLevel.LOGGED
+    error               = Security.check_if_token_allow_access(request, securityLvl)
+
+    errorDesc           = Security.Error.asDescription(error)
+
+    cloud.getBucketFile()
 
     return json.dumps({"error" : errorDesc.__dict__})
