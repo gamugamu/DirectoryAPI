@@ -58,3 +58,13 @@ def logout():
     errorDesc           = Security.Error.asDescription(error)
 
     return json.dumps({"error" : errorDesc.__dict__})
+
+
+@app.route(version_uri + 'deleteaccount', methods=['GET'])
+def delete_account():
+    securityLvl         = Security.SecurityLevel.LOGGED
+    error               = Security.check_if_token_allow_access(request, securityLvl)
+    error               = Login.delete_account(from_error=error, request=request)
+    errorDesc           = Security.Error.asDescription(error)
+
+    return json.dumps({"error" : errorDesc.__dict__})

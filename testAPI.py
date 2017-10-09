@@ -38,7 +38,7 @@ apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE
 headers_requestToken    = {'content-type': 'application/json', 'token-request' : apirequestkey}
 
 print "========== launching test on " + urlRoot + " API. ===========\n"
-print "==========" +url + "asktoken" + "==========="
+print "==========" +url + "asktoken (must succeed)" + "==========="
 
 r = requests.get(url + "asktoken", headers=headers_requestToken)
 print r.content + "\n"
@@ -47,21 +47,21 @@ token   = data["token"]["hash"]
 
 headers_token    = {'content-type': 'application/json', 'token' : token}
 
-print "==========" + url + "createaccount (fail email format)" + "==========="
+print "==========" + url + "createaccount (must fail email format)" + "==========="
 email               = "fluck.com"
 password            = "superpassE0"
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
 print r.content + "\n"
 
-print "==========" + url + "createaccount (fail password format)" + "==========="
+print "==========" + url + "createaccount (must fail password format)" + "==========="
 email               = "fluck@fdss.com"
 password            = "superp___0"
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
 print r.content + "\n"
 
-print "==========" + url + "createaccount (success)" + "==========="
+print "==========" + url + "createaccount (must succeed)" + "==========="
 email               = str(uuid.uuid4())[0:6] + "@gmail.com"
 password            = "superpassE0"
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
@@ -69,29 +69,49 @@ r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps(
 print r.content + "\n"
 
 
-print "==========" + url + "login (fail password format)" + "==========="
+print "==========" + url + "login (must fail password format)" + "==========="
 crypted_password    = encrypt(AKEY + "|" + "fdklfdp" + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
 print r.content + "\n"
 
-print "==========" + url + "login (fail wrong password)" + "==========="
+print "==========" + url + "login (must fail wrong password)" + "==========="
 crypted_password    = encrypt(AKEY + "|" + "superpassE2" + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
 print r.content + "\n"
 
-print "==========" + url + "login (success)" + "==========="
+print "==========" + url + "login (must succeed)" + "==========="
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
 print r.content + "\n"
 
 token_session = json.loads(r.content)["token"]["hash"]
-print "==========" + url + "logout (success)" + "==========="
+print "==========" + url + "logout (must succeed)" + "==========="
 headers_token    = {'content-type': 'application/json', 'token' : token_session}
 r = requests.get(url + "logout", headers=headers_token)
 print r.content + "\n"
 
-print "==========" + url + "logout (fail)" + "==========="
+print "==========" + url + "logout (must fail)" + "==========="
 r = requests.get(url + "logout", headers=headers_token)
+print r.content + "\n"
+
+print "==========" + url + "login (must succeed relogin)" + "==========="
+crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
+print r.content + "\n"
+token_session = json.loads(r.content)["token"]["hash"]
+headers_token    = {'content-type': 'application/json', 'token' : token_session}
+
+print "==========" + url + "login (must fail already logged)" + "==========="
+r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
+print r.content + "\n"
+
+print "==========" + url + "deleteaccount (must succeed)" + "==========="
+r = requests.get(url + "deleteaccount", headers=headers_token)
+print r.content + "\n"
+
+print "==========" + url + "login again with same deleted account (must fail)" + "==========="
+crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
 print r.content + "\n"
 
 #data=json.dumps(payload),

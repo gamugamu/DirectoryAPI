@@ -39,7 +39,11 @@ class Token():
         self.right          = SecurityLevel.NONE.value
 
     def description(self):
-        return str(self.secret_uuid) + "|" + str(self.right) + "|" + self.date_limit
+        if self.secret_uuid == "":
+            #token invalide
+            return ""
+        else:
+            return str(self.secret_uuid) + "|" + str(self.right) + "|" + self.date_limit
 
     def as_dict(self):
         return {
@@ -147,7 +151,7 @@ def generateToken(isValid, securityLvl, from_request):
 
 def generate_Session_token(secret_keys, from_request):
     token = Token()
-    token.secret_uuid   = uuid.uuid4().hex + "|" + from_request.environ["REMOTE_ADDR"]
+    token.secret_uuid   = uuid.uuid4().hex + "|" + from_request.environ["REMOTE_ADDR"] + "|" + secret_keys[3] # account
     token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
     token.right         = SecurityLevel.LOGGED.value
 
@@ -165,6 +169,14 @@ def remove_Session_token(from_request):
 
 def generate_blank_token():
     return Token()
+
+# >= .UNAUTH
+def user_id_from_request(request):
+    crypt_token     = token_from_header(request)
+    decrypt_token   = decrypt_with_security_level(crypt_token, SecurityLevel.LOGGED)
+    data_token      = decrypt_token.split("|")
+
+    return data_token[2] #account
 
 def token_from_header(request):
     return request.headers[TOKEN_HEADER]

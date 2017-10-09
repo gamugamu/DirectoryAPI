@@ -49,31 +49,46 @@ def create_account(from_error, request):
     return perform_check_validity(error, request, add_new_user, decrpt_passw)[0]
 
 def login(from_error, request):
+    # check avant, si l'utilisateur est déjà loggé:
+    token = Security.token_from_header(request)
+
+    if Dbb.is_key_exist(Type.SESSION.name, token):
+        return (Error.USER_ALREADY_LOGGED, User(), Security.generate_blank_token())
+
+    # sinon test de loggin
     error, token_decrpt_passw = login_request_from_data(request, SecurityLevel.UNAUTH)
     error, user = perform_check_validity(error, request, retrieve_user, token_decrpt_passw)
 
     if error.value == Error.SUCCESS.value:
         #check password
         user_decrpt_passw = Security.decrypt_with_security_level(user._secret_password, SecurityLevel.LOGGED)
-        #print "COMPARE: ", token_decrpt_passw, "XXX", user._secret_password, "XXX", user_decrpt_passw
 
         #0 password, 1 email_token, 2 date, 3 email_user
-        #print token_decrpt_passw[0], user_decrpt_passw, token_decrpt_passw[0] == user_decrpt_passw
         if token_decrpt_passw[0] == user_decrpt_passw:
-            #new_token = Security.generate_Session_token(user_decrpt_passw, request)
             session_token = Security.generate_Session_token(token_decrpt_passw, request)
             return (Error.SUCCESS, user, session_token)
         else:
             # Le mot-de-passe n'est pas celui du compte.
             return (Error.WRONG_USER_PASSWORD, User(), Security.generate_blank_token())
     else:
-        return (error, user, Security.generate_blank_token())
+        return (error, User(), Security.generate_blank_token())
 
 def logout(from_error, request):
     if from_error.value == Error.SUCCESS.value:
         did_succed = Security.remove_Session_token(request)
          # Note USER_ALREADY_LOGOUT n'arrivera jamais car Security fait un check en amont.
         return Error.SUCCESS if did_succed else Error.USER_ALREADY_LOGOUT
+    else:
+        return from_error
+
+def delete_account(from_error, request):
+    if from_error.value == Error.SUCCESS.value:
+        email       = Security.user_id_from_request(request)
+        did_remove  = Dbb.remove_value_for_key(Type.USER.name, email)
+        #clean session
+        Security.remove_Session_token(request)
+
+        return Error.SUCCESS if did_remove else Error.USER_NOT_FOUND
     else:
         return from_error
 

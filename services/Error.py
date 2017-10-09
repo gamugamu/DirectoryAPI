@@ -19,6 +19,7 @@ class Error(Enum):
     USER_ALREADY_EXIST          = "30"
     USER_NOT_FOUND              = "31"
     USER_ALREADY_LOGOUT         = "32"
+    USER_ALREADY_LOGGED         = "33"
 
     def asDescription(error):
         description = {
@@ -37,7 +38,8 @@ class Error(Enum):
             "24" : "invalid json, missing required keys. Please read the documentation",
             "30" : "this account has already been taken. Please use another",
             "31" : "User not found",
-            "32" : "You are already disconnected"
+            "32" : "You are already disconnected",
+            "33" : "You are already logged"
             }
         desc                = ErrorDescription()
         desc.code           = error.value
