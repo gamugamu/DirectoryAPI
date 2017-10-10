@@ -117,12 +117,14 @@ r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginr
 print r.content + "\n"
 
 print "==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-data = {"filetype" : {"type" : 1, "name" : "cerise"}}
+data = {"filetype" : {"type" : 1, "name" : "cerise8"}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
+data = json.loads(r.content)
+group_id = data["filepayload"]["uid"]
 
 print "==========" + url + "delete GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-data = {"fileid" : {"type" : 1, "name" : "cerise", "id" : ""}}
+data = {"fileid" : {"type" : 1, "name" : "cerise8", "uid" : group_id}}
 r = requests.post(url + "deletefile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 

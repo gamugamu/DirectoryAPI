@@ -8,6 +8,7 @@ def validate_json(request, graph):
     try:
         data  = request.get_json()
         error = iterate_through_graph(data, graph)
+
         return error, data
 
     except Exception as e:
@@ -15,11 +16,11 @@ def validate_json(request, graph):
         return Error.INVALID_JSON, None
 
 def iterate_through_graph(data, graph):
-    for key, value in graph.items():
-        if key in data == False:
+    for key, value in data.items():
+        if key in graph == False:
             return Error.INVALID_JSON_TYPE
-
-        if type(value) == dict:
-            return iterate_through_graph(value, data[key])
+        else:
+            if type(value) == dict:
+                return iterate_through_graph(value, data[key])
 
     return Error.SUCCESS

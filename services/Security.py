@@ -180,3 +180,6 @@ def user_id_from_request(request):
 
 def token_from_header(request):
     return request.headers[TOKEN_HEADER]
+
+def generate_date_now():
+    return datetime.now().strftime(Fa01_DATE_FORMAT)

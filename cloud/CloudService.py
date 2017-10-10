@@ -9,8 +9,10 @@ from services.JSONValidator import validate_json
 
 from CloudType import Group
 from services import Dbb
+from services.Security import generate_date_now
 from services.TypeRedis import FileType
 from services.Error import Error
+from Model.File import FilePayload, FileHeader
 
 class CloudService:
     id_and_key          = '191c9cd81236:00126b7b79d0d100c93ddc6b6e42f113090d8c8723'
@@ -45,16 +47,16 @@ class CloudService:
                 return  self.c_or_d_file(from_error, owner_id,
                         self.create_new_bucket, param=file_name, file_type=file_type)
             else:
-                return error
+                return error, FilePayload()
         else:
-            return from_error
+            return from_error, FilePayload()
 
     def delete_file(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
-            error, data = validate_json(request, {"fileid": {"name" : "", "type" : "", "id" : ""}})
+            error, data = validate_json(request, {"fileid": {"type" : "", "uid" : ""}})
 
             if error == Error.SUCCESS:
-                file_id = data["fileid"]["name"]
+                file_id = data["fileid"]["uid"]
 
                 return  self.c_or_d_file(from_error, owner_id,
                         self.delete_bucket, param=file_id, file_type=1) #1 TODO à mettre le vraie valueur du type
@@ -73,37 +75,48 @@ class CloudService:
         e, r, response = self.simplified_post_request(uri_name="b2_create_bucket", post_data=params)
 
         if e == Error.SUCCESS and r.status_code == 200:
+            print "let's do it"
             try:
-                bucket = Group(id=response["bucketId"], name=response["bucketName"])
-                bucket.users_id.append(owner_id)
-                # store
-                Dbb.store_collection(FileType.GROUP.name, bucket.name, bucket.__dict__)
+                bucket_id           = response["bucketId"]
+                bucket_name         = response["bucketName"]
 
-                return Error.SUCCESS
+                group = FilePayload(uid       = bucket_id,
+                                    name      = bucket_name,
+                                    type      = FileType.GROUP.value,
+                                    date      = generate_date_now(),
+                                    owner     = [owner_id])
+
+                # store
+                Dbb.store_collection(FileType.GROUP.name, bucket_id, group.__dict__)
+
+                # le payload est une façade pour ne pas renvoyer un type Redis Group, même si c'est
+                # ça qui est factuellement mis dans la bdd. Mais retourne un type
+                # filePayload, uniforme pour le client.
+                return Error.SUCCESS, group
 
             except Exception as e:
                 print "ERROR", e
-                return Error.FAILED_CREATE_GROUP
+                return Error.FAILED_CREATE_GROUP, FilePayload()
 
-            return Error.SUCCESS
         else:
-            return Error.FAILED_CREATE_GROUP
+            return Error.FAILED_CREATE_GROUP, FilePayload()
 
     #supprime le bucket
     def delete_bucket(self, bucket_id, owner_id):
         try:
             print "try to delete bucket :", bucket_id
+            bucket_redis_name   = bucket_id
             bucket = bunchify(Dbb.collection_for_Key(FileType.GROUP.name, bucket_id))
-            print bucket
 
             # store
             params = {  'accountId': CloudService.account_id,
-                        'bucketId': bucket.id}
+                        'bucketId': bucket.uid}
 
             e, r, response = self.simplified_post_request(uri_name="b2_delete_bucket", post_data=params)
 
             # fichier supprimée, clean de la bdd
             if e == Error.SUCCESS and r.status_code == 200:
+                print "deleted bucket succeed", bucket_id
                 Dbb.remove_value_for_key(FileType.GROUP.name, bucket.name)
                 return Error.SUCCESS
             else:
