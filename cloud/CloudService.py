@@ -34,24 +34,34 @@ class CloudService:
         self.api_url         = data['apiUrl']
         self.download_url    = data['downloadUrl']
 
-    def validate_create_file_json_request(self, create_request):
-        return validate_json(create_request, {"filetype": {"name" : "", "type" : ""}})
+    def create_file(self, from_error, request, owner_id):
+        if from_error == Error.SUCCESS:
+            error, data = validate_json(request, {"filetype": {"name" : "", "type" : ""}})
 
-    def validate_delete_file_json_request(self, create_request):
-        return validate_json(create_request, {"fileid": {"name" : "", "type" : "", "id" : ""}})
+            if error == Error.SUCCESS:
+                file_name = data["filetype"]["name"]
+                file_type = data["filetype"]["type"]
 
-    def create_file(self, from_error, data, owner_id):
-        file_name = data["filetype"]["name"]
-        file_type = data["filetype"]["type"]
+                return  self.c_or_d_file(from_error, owner_id,
+                        self.create_new_bucket, param=file_name, file_type=file_type)
+            else:
+                return error
+        else:
+            return from_error
 
-        return  self.c_or_d_file(from_error, owner_id,
-                self.create_new_bucket, param=file_name, file_type=file_type)
+    def delete_file(self, from_error, request, owner_id):
+        if from_error == Error.SUCCESS:
+            error, data = validate_json(request, {"fileid": {"name" : "", "type" : "", "id" : ""}})
 
-    def delete_file(self, from_error, data, owner_id):
-        file_id = data["fileid"]["name"]
+            if error == Error.SUCCESS:
+                file_id = data["fileid"]["name"]
 
-        return  self.c_or_d_file(from_error, owner_id,
-                self.delete_bucket, param=file_id, file_type=1) #1 TODO à mettre le vraie valueur du type
+                return  self.c_or_d_file(from_error, owner_id,
+                        self.delete_bucket, param=file_id, file_type=1) #1 TODO à mettre le vraie valueur du type
+            else:
+                return error
+        else:
+            return error
 
     # limité à 10
     def create_new_bucket(self, bucket_name, owner_id):

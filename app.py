@@ -77,8 +77,7 @@ def create_file():
     securityLvl         = Security.SecurityLevel.LOGGED
     error               = Security.check_if_token_allow_access(request, securityLvl)
     user_id             = Security.user_id_from_request(request)
-    error, data         = cloud.validate_create_file_json_request(request)
-    error               = cloud.create_file(error, data, user_id)
+    error               = cloud.create_file(error, request, user_id)
     errorDesc           = Security.Error.asDescription(error)
 
     return json.dumps({"error" : errorDesc.__dict__})
@@ -88,8 +87,7 @@ def delete_file():
     securityLvl         = Security.SecurityLevel.LOGGED
     error               = Security.check_if_token_allow_access(request, securityLvl)
     user_id             = Security.user_id_from_request(request)
-    error, data         = cloud.validate_delete_file_json_request(request)
-    error               = cloud.delete_file(error, data, user_id)
+    error               = cloud.delete_file(error, request, user_id)
     errorDesc           = Security.Error.asDescription(error)
 
     return json.dumps({"error" : errorDesc.__dict__})
