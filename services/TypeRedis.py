@@ -10,4 +10,5 @@ class Login_Req(Enum):
 class Type(Enum):
     TOKEN       = 0,
     SESSION     = 1,
-    USER        = 2
+    USER        = 2,
+    GROUP       = 3 # bucket

@@ -20,6 +20,8 @@ class Error(Enum):
     USER_NOT_FOUND              = "31"
     USER_ALREADY_LOGOUT         = "32"
     USER_ALREADY_LOGGED         = "33"
+    FAILED_CREATE_GROUP         = "70"
+    FAILED_DELETE_GROUP         = "71"
 
     def asDescription(error):
         description = {
@@ -39,7 +41,9 @@ class Error(Enum):
             "30" : "this account has already been taken. Please use another",
             "31" : "User not found",
             "32" : "You are already disconnected",
-            "33" : "You are already logged"
+            "33" : "You are already logged",
+            "70" : "Cannot create group.",
+            "71" : "Cannot delete group"
             }
         desc                = ErrorDescription()
         desc.code           = error.value

@@ -79,6 +79,6 @@ def create_file():
 
     errorDesc           = Security.Error.asDescription(error)
 
-    cloud.getBucketFile()
+    cloud.retrieve_main_bucket()
 
     return json.dumps({"error" : errorDesc.__dict__})
