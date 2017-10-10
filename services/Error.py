@@ -42,8 +42,8 @@ class Error(Enum):
             "31" : "User not found",
             "32" : "You are already disconnected",
             "33" : "You are already logged",
-            "70" : "Cannot create group.",
-            "71" : "Cannot delete group"
+            "70" : "Error : Cannot create group.",
+            "71" : "Error : Cannot delete group"
             }
         desc                = ErrorDescription()
         desc.code           = error.value

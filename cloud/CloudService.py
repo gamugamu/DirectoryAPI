@@ -5,10 +5,11 @@ import json
 import requests
 import hashlib
 from bunch import bunchify
+from services.JSONValidator import validate_json
 
 from CloudType import Group
 from services import Dbb
-from services.TypeRedis import Type
+from services.TypeRedis import FileType
 from services.Error import Error
 
 class CloudService:
@@ -35,9 +36,33 @@ class CloudService:
 
         print data
         #self.create_new_bucket("jojoAdventure")
-        self.delete_bucket("jojoAdventure")
+        #self.delete_bucket("jojoAdventure")
         #self.retrieve_bucket_from_id()
 
+    def validate_create_file_json_request(self, create_request):
+        try:
+            error, create_request   = validate_json(create_request)
+            create_info             = create_request["filetype"]
+
+            if set(("name", "type")) <= set(create_info):
+                return error, create_info
+            else:
+                return Error.INVALID_JSON_TYPE, None
+
+        except Exception as e:
+            return Error.INVALID_JSON_TYPE, None
+
+    def create_file(self, from_error, data, owner_id):
+        if from_error.value == Error.SUCCESS.value:
+            print "FFFFF ", data
+            if data["type"] == int(FileType.GROUP):
+                return self.create_new_bucket(data["name"], owner_id)
+            else: # file or folder
+                return Error.NONE
+        else:
+            return from_error
+
+    ##### private
     def retrieve_bucket_from_id(self):
         if self.main_bucket_id == "":
             ##TODO check fail
@@ -54,7 +79,7 @@ class CloudService:
         #self.create_file_in_bucket(self.main_bucket_id, "folder/jojo.txt")
 
     # limité à 10
-    def create_new_bucket(self, bucket_name):
+    def create_new_bucket(self, bucket_name, owner_id):
         print "Try to create a new bucket..."
         params = {
             'accountId': CloudService.account_id,
@@ -71,8 +96,9 @@ class CloudService:
 
         try:
             bucket = Group(id=response["bucketId"], name=response["bucketName"])
+            bucket.users_id.append(owner_id)
             # store
-            Dbb.store_collection(Type.GROUP.name, bucket.name, bucket.__dict__)
+            Dbb.store_collection(FileType.GROUP.name, bucket.name, bucket.__dict__)
 
             return Error.SUCCESS
 
@@ -84,7 +110,7 @@ class CloudService:
     def delete_bucket(self, bucket_name):
         try:
             print "try to delete bucket"
-            bucket = bunchify(Dbb.collection_for_Key(Type.GROUP.name, bucket_name))
+            bucket = bunchify(Dbb.collection_for_Key(FileType.GROUP.name, bucket_name))
 
             # store
             params = {
@@ -101,7 +127,7 @@ class CloudService:
             # fichier supprimer, clean de la bdd
             if r.status_code == 200:
                 print "succeed"
-                Dbb.remove_value_for_key(Type.GROUP.name, bucket.name)
+                Dbb.remove_value_for_key(FileType.GROUP.name, bucket.name)
                 return Error.SUCCESS
             else:
                 print "failed"

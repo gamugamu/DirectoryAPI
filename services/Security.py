@@ -67,15 +67,15 @@ def decrypt(cipher, akey=AKEY, _iv=iv):
     return obj2.decrypt(base64.urlsafe_b64decode(cipher))
 
 def encrypt_with_security_level(data_to_encrypt, lvSecurity):
-    _akey    = AKEY if lvSecurity.value == SecurityLevel.UNAUTH.value else s_AKEY
-    _iv      = iv if lvSecurity.value == SecurityLevel.UNAUTH.value else s_iv
+    _akey = AKEY if lvSecurity.value == SecurityLevel.UNAUTH.value else s_AKEY
+    _iv   = iv if lvSecurity.value == SecurityLevel.UNAUTH.value else s_iv
 
     return encrypt(str(data_to_encrypt), _akey, _iv)
 
 def decrypt_with_security_level(data_to_decrypt, lvSecurity):
     try:
-        _akey    = AKEY if lvSecurity.value == SecurityLevel.UNAUTH.value else s_AKEY
-        _iv      = iv if lvSecurity.value == SecurityLevel.UNAUTH.value else s_iv
+        _akey = AKEY if lvSecurity.value == SecurityLevel.UNAUTH.value else s_AKEY
+        _iv   = iv if lvSecurity.value == SecurityLevel.UNAUTH.value else s_iv
 
         decrypt_pass = decrypt(str(data_to_decrypt), _akey, _iv)
             # security level

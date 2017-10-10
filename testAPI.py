@@ -118,11 +118,11 @@ r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginr
 print r.content + "\n"
 
 print "==========" + url + "create file - create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
-r = requests.post(url + "createfile", headers=headers_token, data=json.dumps({}))
+data = {"filetype" : {"type" : 1, "name" : "cerise"}}
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 
-
+"""
 print "==========" + url + "deleteaccount" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
 r = requests.get(url + "deleteaccount", headers=headers_token)
 print r.content + "\n"
@@ -131,7 +131,7 @@ print "==========" + url + "login again with same deleted account " + color.BOLD
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
 print r.content + "\n"
-
+"""
 #data=json.dumps(payload),
 
 #r = requests.get(urlRoot)
