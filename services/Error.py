@@ -22,6 +22,7 @@ class Error(Enum):
     USER_ALREADY_LOGGED         = "33"
     FAILED_CREATE_GROUP         = "70"
     FAILED_DELETE_GROUP         = "71"
+    EXCEPTION                   = "100"
 
     def asDescription(error):
         description = {
@@ -43,7 +44,8 @@ class Error(Enum):
             "32" : "You are already disconnected",
             "33" : "You are already logged",
             "70" : "Error : Cannot create group.",
-            "71" : "Error : Cannot delete group"
+            "71" : "Error : Cannot delete group",
+            "100": "Exception while communicating with BackBlaze"
             }
         desc                = ErrorDescription()
         desc.code           = error.value
