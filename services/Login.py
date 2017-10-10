@@ -118,7 +118,7 @@ def perform_check_validity(from_error, request, callBack, login_request):
         return (from_error, User().__dict__)
 
 def login_request_from_data(request, SecurityLevel):
-    error, data = validate_json(request)
+    error, data = validate_json(request, {LR.loginrequest.name : {LR.cryptpassword.name : "", LR.email.name : ""}})
 
     if error == Error.SUCCESS:
         #Vérification clès API

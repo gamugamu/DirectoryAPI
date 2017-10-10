@@ -4,11 +4,22 @@ from Error import Error
 
 import json
 
-def validate_json(request):
+def validate_json(request, graph):
     try:
-        data = request.get_json()
-        return (Error.SUCCESS, data)
+        data  = request.get_json()
+        error = iterate_through_graph(data, graph)
+        return error, data
 
     except Exception as e:
         print(e)
-        return (Error.INVALID_JSON, "")
+        return Error.INVALID_JSON, None
+
+def iterate_through_graph(data, graph):
+    for key, value in graph.items():
+        if key in data == False:
+            return Error.INVALID_JSON_TYPE
+
+        if type(value) == dict:
+            return iterate_through_graph(value, data[key])
+
+    return Error.SUCCESS

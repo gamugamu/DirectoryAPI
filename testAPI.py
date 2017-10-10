@@ -80,7 +80,6 @@ crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + dateti
 r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
 print r.content + "\n"
 
-
 print "==========" + url + "login " + color.BOLD + color.CYAN + "(must fail password format)" + color.END + "==========="
 crypted_password    = encrypt(AKEY + "|" + "fdklfdp" + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
@@ -121,6 +120,12 @@ print "==========" + url + "create file - create GROUP " + color.BOLD + color.PU
 data = {"filetype" : {"type" : 1, "name" : "cerise"}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
+
+print "==========" + url + "delete file - create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"fileid" : {"type" : 1, "name" : "cerise", "id" : ""}}
+r = requests.post(url + "deletefile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+
 
 """
 print "==========" + url + "deleteaccount" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
