@@ -116,12 +116,12 @@ print "==========" + url + "login " + color.BOLD + color.CYAN + "(must fail alre
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
 print r.content + "\n"
 
-print "==========" + url + "create file - create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+print "==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
 data = {"filetype" : {"type" : 1, "name" : "cerise"}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 
-print "==========" + url + "delete file - create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+print "==========" + url + "delete GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
 data = {"fileid" : {"type" : 1, "name" : "cerise", "id" : ""}}
 r = requests.post(url + "deletefile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"

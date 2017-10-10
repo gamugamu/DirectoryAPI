@@ -94,6 +94,7 @@ class CloudService:
         try:
             print "try to delete bucket :", bucket_id
             bucket = bunchify(Dbb.collection_for_Key(FileType.GROUP.name, bucket_id))
+            print bucket
 
             # store
             params = {  'accountId': CloudService.account_id,
@@ -173,6 +174,7 @@ class CloudService:
         response = json.loads(r.content)
         print response
 
+    #helper
     def simplified_post_request(self, uri_name, post_data):
         try:
             r = requests.post(  '%s/b2api/v1/%s' % (self.api_url, uri_name),
@@ -185,7 +187,7 @@ class CloudService:
             print "__ERROR", e
             return Error.EXCEPTION, None, None
 
-
+    #helper
     def c_or_d_file(self, from_error, owner_id, callback, param, file_type):
         if from_error.value == Error.SUCCESS.value:
             if file_type == int(FileType.GROUP):

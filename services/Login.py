@@ -1,24 +1,18 @@
 # coding: utf8
-from Error import Error
-from bunch import bunchify
+
 
 import re
 import json
 import Dbb
-
 import Security
-from Security import SecurityLevel
-from TypeRedis import Type, Login_Req as LR
 
+from Security import SecurityLevel
+from Error import Error
+from bunch import bunchify
+from Model.User import User
+from TypeRedis import Type, Login_Req as LR
 from JSONValidator import validate_json
 
-class User:
-    def __init__(self, id="", email="", name="", group=[]):
-        self.id                 = id
-        self.email              = email
-        self.name               = name
-        self.group              = group
-        self._secret_password   = ""
 
 def add_new_user(email, loginData):
     newUser         = User(email=email)
@@ -53,6 +47,7 @@ def login(from_error, request):
     token = Security.token_from_header(request)
 
     if Dbb.is_key_exist(Type.SESSION.name, token):
+        #il est déjà loggé
         return (Error.USER_ALREADY_LOGGED, User(), Security.generate_blank_token())
 
     # sinon test de loggin
@@ -71,14 +66,17 @@ def login(from_error, request):
             # Le mot-de-passe n'est pas celui du compte.
             return (Error.WRONG_USER_PASSWORD, User(), Security.generate_blank_token())
     else:
+        # le token ne doit pas être bon
         return (error, User(), Security.generate_blank_token())
 
 def logout(from_error, request):
     if from_error.value == Error.SUCCESS.value:
+        # devrait toujours être à true
         did_succed = Security.remove_Session_token(request)
          # Note USER_ALREADY_LOGOUT n'arrivera jamais car Security fait un check en amont.
         return Error.SUCCESS if did_succed else Error.USER_ALREADY_LOGOUT
     else:
+        # autre erreur
         return from_error
 
 def delete_account(from_error, request):
@@ -123,7 +121,7 @@ def login_request_from_data(request, SecurityLevel):
     if error == Error.SUCCESS:
         #Vérification clès API
         login_request = data[LR.loginrequest.name]
-
+        #TODO refacto
         if set((LR.cryptpassword.name, LR.email.name)) <= set(login_request):
             crypt_passw         = login_request[LR.cryptpassword.name]
             email               = login_request[LR.email.name]
