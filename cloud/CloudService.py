@@ -44,8 +44,10 @@ class CloudService:
                 file_name = data["filetype"]["name"]
                 file_type = data["filetype"]["type"]
 
-                return  self.c_or_d_file(from_error, owner_id,
-                        self.create_new_bucket, param=file_name, file_type=file_type)
+                if file_type == int(FileType.GROUP):
+                    return self.create_new_bucket(file_name, owner_id)
+                else: # file or folder
+                    pass
             else:
                 return error, FilePayload()
         else:
@@ -56,8 +58,13 @@ class CloudService:
             error, data = validate_json(request, {"fileid": {"type" : "", "uid" : ""}})
 
             if error == Error.SUCCESS:
-                file_id = data["fileid"]["uid"]
+                file_id     = data["fileid"]["uid"]
+                file_type   = data["fileid"]["type"]
 
+                if file_type == int(FileType.GROUP):
+                    return self.delete_bucket(file_id, owner_id)
+                else: # file or folder
+                    pass
                 return  self.c_or_d_file(from_error, owner_id,
                         self.delete_bucket, param=file_id, file_type=1) #1 TODO à mettre le vraie valueur du type
             else:
@@ -199,13 +206,3 @@ class CloudService:
         except Exception as e:
             print "__ERROR", e
             return Error.EXCEPTION, None, None
-
-    #helper
-    def c_or_d_file(self, from_error, owner_id, callback, param, file_type):
-        if from_error.value == Error.SUCCESS.value:
-            if file_type == int(FileType.GROUP):
-                return callback(param, owner_id)
-            else: # file or folder
-                return Error.NONE
-        else:
-            return from_error
