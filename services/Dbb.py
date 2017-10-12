@@ -62,5 +62,13 @@ def remove_value_for_key(typeKey="", key=""):
     else:
         return r.delete(generated_key(typeKey, key))
 
+def remove_with_key_pattern(p_key=""):
+    did_deleted = False
+    for key in r.scan_iter(p_key):
+        r.delete(key)
+        did_deleted = True
+
+    return did_deleted
+
 def appendedValue(data, value):
     return data + "|" + value

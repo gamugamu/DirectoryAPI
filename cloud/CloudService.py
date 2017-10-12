@@ -68,11 +68,21 @@ class CloudService:
                 file_type   = data["fileid"]["type"]
 
                 if file_type == int(FileType.GROUP):
+                    # le bucket doit être vide afin d'effacer son contenu
+                    # (oui, c'est complétement débile!)
                     return self.delete_bucket(file_id, owner_id)
                 else: # file or folder
+
                     pass
         else:
             return error
+
+    def delete_file_from_server(self, file_id, file_name):
+        params = {  'fileName': file_name,
+                    'fileId': file_id }
+
+        e, r, response = self.simplified_post_request(uri_name="b2_delete_file_version", post_data=params)
+        return e, r
 
     # limité à 10
     def create_new_bucket(self, bucket_name, owner_id):
@@ -112,26 +122,55 @@ class CloudService:
     def delete_bucket(self, bucket_id, owner_id):
         try:
             print "try to delete bucket :", bucket_id
-            bucket_redis_name   = bucket_id
+            bucket_redis_name = bucket_id
+            e = self.recursively_delete_all_files_in_bucket(bucket_id)
 
-            # store
-            params = {  'accountId': CloudService.account_id,
-                        'bucketId': bucket_id}
+            if e == Error.SUCCESS:
+                # store
+                params = {  'accountId': CloudService.account_id,
+                            'bucketId': bucket_id}
 
-            e, r, response = self.simplified_post_request(uri_name="b2_delete_bucket", post_data=params)
+                e, r, response = self.simplified_post_request(uri_name="b2_delete_bucket", post_data=params)
 
-            # fichier supprimée, clean de la bdd
-            if e == Error.SUCCESS and r.status_code == 200:
-                print "deleted bucket succeed", bucket_id
-                Dbb.remove_value_for_key(FileType.GROUP.name, bucket.name)
-                return Error.SUCCESS
+                # fichier supprimée, clean de la bdd
+                if e == Error.SUCCESS and r.status_code == 200:
+                    print "deleted bucket succeed", bucket_id
+                    Dbb.remove_value_for_key(FileType.GROUP.name, bucket_id)
+                    return Error.SUCCESS
+                else:
+                    print "can't delete bucket ", response
+                    return Error.FAILED_DELETE_GROUP
             else:
-                print "can't delete bucket"
+                print "can't delete files in bucket ", response
                 return Error.FAILED_DELETE_GROUP
 
         except Exception as e:
             print "ERROR_DELETE_BUCKET", e
             return Error.FAILED_DELETE_GROUP
+
+    def recursively_delete_all_files_in_bucket(self, bucket_id):
+        # store
+        print "recursively_delete_all_files_in_bucket"
+        params          = {'bucketId': bucket_id}
+        e, r, response  = self.simplified_post_request(uri_name="b2_list_file_names", post_data=params)
+
+        #R2cupérations de la listes des fichiers + suppresion
+        if e == Error.SUCCESS and r.status_code == 200:
+            for file_list in response["files"]:
+                file_id = file_list["fileId"]
+                e, r    = self.delete_file_from_server(file_id, file_list["fileName"])
+                if e == Error.SUCCESS and r.status_code == 200:
+                    print "DID DELET ", Dbb.remove_with_key_pattern(p_key= "*|" + file_id)
+
+                    print "file deleted ", file_list["fileName"]
+                    pass
+                else:
+                    print "couldn't delete file ", e, r.content
+                    return e
+            #les suppressions ont réussies
+            return Error.SUCCESS
+        else:
+            return e
 
     ##### private
     def retrieve_bucket_from_id(self):
@@ -165,7 +204,7 @@ class CloudService:
 
         except Exception as e:
             print "EXCEPTION: ", e, "is not from graph"
-            return Error.REDIS_KEY_UNKNOWN, None
+            return Error.REDIS_KEY_UNKNOWN, None, ""
 
     def create_file_in_bucket(self, bucket, owner_id, file_name, uri_path):
         # Vérifie qu'il a bien un parent (devrait toujours être a true)
