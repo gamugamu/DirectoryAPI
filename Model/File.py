@@ -11,13 +11,14 @@ class FileID(FileType):
         self.uid = uid
 
 class FileHeader(FileID):
-    def __init__(self, owner="", title="", date="", parent="", rules=[], *args, **kwargs):
+    def __init__(self, owner="", title="", date="", parentId="", rules="", childsId="", *args, **kwargs):
         super(FileHeader, self).__init__(*args, **kwargs)
-        self.owner  = owner
-        self.title  = title
-        self.date   = date
-        self.parent = parent
-        self.rules  = rules
+        self.owner      = owner
+        self.title      = title
+        self.date       = date
+        self.parentId   = parentId
+        self.rules      = rules
+        self.childsId   = childsId
 
 class FilePayload(FileHeader):
     def __init__(self, payload="", *args, **kwargs):

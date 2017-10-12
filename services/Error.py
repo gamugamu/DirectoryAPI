@@ -23,6 +23,8 @@ class Error(Enum):
     FAILED_CREATE_GROUP         = "70"
     FAILED_DELETE_GROUP         = "71"
     EXCEPTION                   = "100"
+    REDIS_KEY_UNKNOWN           = "101"
+    REDIS_KEY_ALREADY_EXIST     = "102"
 
     def asDescription(error):
         description = {
@@ -45,7 +47,9 @@ class Error(Enum):
             "33" : "You are already logged",
             "70" : "Error : Cannot create group.",
             "71" : "Error : Cannot delete group",
-            "100": "Exception while communicating with BackBlaze"
+            "100": "Exception while communicating with BackBlaze",
+            "101": "Exception, data not found in database (Redis)",
+            "102": "Exception, Key already exist in (Redis) database"
             }
         desc                = ErrorDescription()
         desc.code           = error.value

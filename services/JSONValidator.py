@@ -16,11 +16,11 @@ def validate_json(request, graph):
         return Error.INVALID_JSON, None
 
 def iterate_through_graph(data, graph):
-    for key, value in data.items():
-        if key in graph == False:
+    for key, value in graph.items():
+        if (key in data) == False:
             return Error.INVALID_JSON_TYPE
         else:
             if type(value) == dict:
-                return iterate_through_graph(value, data[key])
+                return iterate_through_graph(data[key], graph[key])
 
     return Error.SUCCESS
