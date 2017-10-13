@@ -1,6 +1,6 @@
 # coding: utf8
 class User:
-    def __init__(self, uid="", email="", name="", group=[]):
+    def __init__(self, uid="", email="", name="", group=""):
         self.uid                = uid
         self.email              = email
         self.name               = name

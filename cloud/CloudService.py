@@ -7,6 +7,7 @@ import hashlib
 from bunch import bunchify, unbunchify
 from services.JSONValidator import validate_json
 
+from services.TypeRedis import Type
 from CloudType import Group
 from services import Dbb
 from services.Security import generate_date_now
@@ -50,8 +51,12 @@ class CloudService:
                 else: # file or folder
                     error, bucket, uri_path = self.retrieve_bucket_data_from_graph(parent_id)
 
+                      # Si c'est un dossier, le nom doit être formaté avec un .bzEmpty
+                    if file_type == int(FileType.FOLDER):
+                        file_name = self.append_as_folder(file_name)
+
                     if error == Error.SUCCESS:
-                        return self.create_file_in_bucket(bunchify(bucket), owner_id, file_name, uri_path)
+                        return self.create_file_in_bucket(bunchify(bucket), owner_id, file_name, uri_path, parent_id)
                     else:
                         return error, FilePayload()
             else:
@@ -72,7 +77,7 @@ class CloudService:
                     # (oui, c'est complétement débile!)
                     return self.delete_bucket(file_id, owner_id)
                 else: # file or folder
-
+                    print "NOT DONE ----------"
                     pass
         else:
             return error
@@ -94,7 +99,6 @@ class CloudService:
         e, r, response = self.simplified_post_request(uri_name="b2_create_bucket", post_data=params)
 
         if e == Error.SUCCESS and r.status_code == 200:
-            print "let's do it"
             try:
                 bucket_id           = response["bucketId"]
                 bucket_name         = response["bucketName"]
@@ -105,8 +109,8 @@ class CloudService:
                                     date      = generate_date_now(),
                                     owner     = [owner_id])
                 # store
+                self.add_user_ownership(owner_id, bucket_id)
                 Dbb.store_collection(FileType.GROUP.name, bucket_id, group.__dict__)
-                print "bucket created"
                 return Error.SUCCESS, group
 
             except Exception as e:
@@ -121,7 +125,6 @@ class CloudService:
     #supprime le bucket
     def delete_bucket(self, bucket_id, owner_id):
         try:
-            print "try to delete bucket :", bucket_id
             bucket_redis_name = bucket_id
             e = self.recursively_delete_all_files_in_bucket(bucket_id)
 
@@ -134,8 +137,8 @@ class CloudService:
 
                 # fichier supprimée, clean de la bdd
                 if e == Error.SUCCESS and r.status_code == 200:
-                    print "deleted bucket succeed", bucket_id
                     Dbb.remove_value_for_key(FileType.GROUP.name, bucket_id)
+                    self.remove_user_ownership(owner_id, bucket_id)
                     return Error.SUCCESS
                 else:
                     print "can't delete bucket ", response
@@ -150,7 +153,6 @@ class CloudService:
 
     def recursively_delete_all_files_in_bucket(self, bucket_id):
         # store
-        print "recursively_delete_all_files_in_bucket"
         params          = {'bucketId': bucket_id}
         e, r, response  = self.simplified_post_request(uri_name="b2_list_file_names", post_data=params)
 
@@ -159,11 +161,9 @@ class CloudService:
             for file_list in response["files"]:
                 file_id = file_list["fileId"]
                 e, r    = self.delete_file_from_server(file_id, file_list["fileName"])
-                if e == Error.SUCCESS and r.status_code == 200:
-                    print "DID DELET ", Dbb.remove_with_key_pattern(p_key= "*|" + file_id)
 
-                    print "file deleted ", file_list["fileName"]
-                    pass
+                if e == Error.SUCCESS and r.status_code == 200:
+                    Dbb.remove_with_key_pattern(p_key= "*|" + file_id)
                 else:
                     print "couldn't delete file ", e, r.content
                     return e
@@ -172,50 +172,49 @@ class CloudService:
         else:
             return e
 
-    ##### private
-    def retrieve_bucket_from_id(self):
-        if self.main_bucket_id == "":
-            ##TODO PAS encore fait
-            r = requests.post(  '%s/b2api/v1/b2_list_buckets' % self.api_url,
-                                data    = json.dumps({ 'accountId' : CloudService.account_id }),
-                                headers = self.header_request())
-            response             = json.loads(r.content)
-            self.main_bucket_id  = response["buckets"][0]["bucketId"]
-
-        ### TEST
-        #self.getFilesFromBucketName(self.main_bucket_id)
-        #self.create_file_in_bucket(self.main_bucket_id, "folder/jojo.txt")
-
     def retrieve_bucket_data_from_graph(self, parent_id, uri_path=""):
-        key     = "*_" + parent_id
-        value   = Dbb.value_for_key(key=key)
+        b_key   = "*_" + parent_id
+        f_key   = "*|" + parent_id
+        key     = ""
+
+        # le patterne est différent pour retrouver un folder ou un bucket
+        # il y a plus de chance de tomber sur un folder que sur un bucket.
+        if Dbb.is_key_exist_forPattern(f_key):
+            key = f_key
+
+        elif Dbb.is_key_exist_forPattern(b_key):
+            key = b_key
+
+        value = Dbb.value_for_key(key=key)
 
         try:
             parent_key = value.next()
 
             if FileType.GROUP.name in parent_key:
                 # bucket trouvé. N'as pas de parent.
-                bucket      = Dbb.collection_for_Key(key=parent_key)
-
+                bucket = Dbb.collection_for_Key(key=parent_key)
                 return Error.SUCCESS, Dbb.collection_for_Key(key=parent_key), uri_path
             else:
-                print "*******found folder, reiterate"
-                return Error.None, Dbb.collection_for_Key(key=parent_key), uri_path
+                # note, un fichier ne peut pas contenir un autre fichier,
+                # donc forcement un folder
+                folder      = Dbb.collection_for_Key(key=parent_key)
+                folder      = bunchify(folder)
+                uri_path    = self.append_path(folder.name, uri_path)
+
+                return self.retrieve_bucket_data_from_graph(folder.parentId, uri_path)
 
         except Exception as e:
-            print "EXCEPTION: ", e, "is not from graph"
+            print "EXCEPTION: ", e, key, "is not from graph"
             return Error.REDIS_KEY_UNKNOWN, None, ""
 
-    def create_file_in_bucket(self, bucket, owner_id, file_name, uri_path):
+    def create_file_in_bucket(self, bucket, owner_id, file_name, uri_path, parentId):
         # Vérifie qu'il a bien un parent (devrait toujours être a true)
         if bucket is not None:
             # Et vérifie qu'il n'y a pas de doublon
             #TODO faire le check
-            print "create_file_in_bucket: ", uri_path
+
             uri_path      = self.append_path(uri_path, file_name)
             full_uri_path = self.append_path(bucket.name, uri_path)
-
-            print "full_uri_path=== ", full_uri_path
 
             is_entry_already_exist = Dbb.is_key_exist_forPattern("*|" + full_uri_path + "|*")
 
@@ -230,8 +229,6 @@ class CloudService:
                     uploadUrl   = response["uploadUrl"]
 
                     # now send data
-                    print "url found ====== now uploading content"
-
                     file_data           = ""
                     file_name           = file_name
                     content_type        = "text/plain"
@@ -250,22 +247,24 @@ class CloudService:
 
                     if e == Error.SUCCESS and r.status_code == 200:
                         # creation du fichier redis
-                        print "response***** ", response
+                        if parentId == "":
+                            parentId = bucket.uid
+
                         file_id = response["fileId"]
                         file_   = FilePayload(  uid       = file_id,
-                                                name      = file_name,
+                                                name      = self.sanityse_path(file_name),
                                                 type      = FileType.FILE.value,
                                                 date      = generate_date_now(),
                                                 owner     = [owner_id],
-                                                parentId  = bucket.uid)
+                                                parentId  = parentId)
 
+                        full_uri_path       = self.sanityse_path(full_uri_path)
                         redis_id            = "|" + full_uri_path + "|" + file_id
                         bucket.childsId     = Dbb.appendedValue(bucket.childsId, file_id)
 
                         #update data
                         Dbb.store_collection(FileType.FILE.name, redis_id, file_.__dict__)
                         Dbb.store_collection(FileType.GROUP.name, bucket.uid, unbunchify(bucket))
-                        print "ADDED TO DB and backBlaze"
 
                         return Error.SUCCESS, file_
                     else:
@@ -291,8 +290,6 @@ class CloudService:
 
             if header is None:
                 header = { 'Authorization': self.auth_token }
-            else:
-                print "HEADER FOUND ", header
 
             if need_dumping == True:
                 post_data = json.dumps(post_data)
@@ -310,4 +307,23 @@ class CloudService:
         if path == "":
             return new_value
         else:
-            return path + "/" + new_value
+            new_path = path + "/" + new_value
+            return new_path.replace("//", "/")
+
+    def sanityse_path(self, path):
+        return path.replace("/.bzEmpty", "")
+
+    def append_as_folder(self, path):
+        return path + "/.bzEmpty"
+
+    def add_user_ownership(self, user_id, group_id):
+        user            = Dbb.collection_for_Key(typeKey=Type.USER.name, key=user_id)
+        user["group"]   = Dbb.appendedValue(user["group"], group_id)
+
+        Dbb.store_collection(Type.USER.name, user_id, user)
+
+    def remove_user_ownership(self, user_id, group_id):
+        user            = Dbb.collection_for_Key(typeKey=Type.USER.name, key=user_id)
+        user["group"]   = Dbb.removedValue(user["group"], group_id)
+
+        Dbb.store_collection(Type.USER.name, user_id, user)

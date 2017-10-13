@@ -117,20 +117,68 @@ r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginr
 print r.content + "\n"
 
 print "==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-data = {"filetype" : {"type" : 1, "name" : "yellow1", "parentId" : ""}}
+data = {"filetype" : {"type" : 1, "name" : "yellow2", "parentId" : ""}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 data = json.loads(r.content)
 group_id = data["filepayload"]["uid"]
 
+"""
 print "==========" + url + "create File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-data = {"filetype" : {"type" : 3, "name" : "pomme", "parentId" : group_id}}
+data = {"filetype" : {"type" : 3, "name" : "subYellow", "parentId" : group_id}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 data = json.loads(r.content)
 
+print "==========" + url + "create Folder in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"filetype" : {"type" : 2, "name" : "fruits", "parentId" : group_id}}
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data = json.loads(r.content)
+folder_id = data["filepayload"]["uid"]
+
+print "==========" + url + "create file in Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"filetype" : {"type" : 3, "name" : "pomme", "parentId" : folder_id}}
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data = json.loads(r.content)
+
+print "==========" + url + "create Folder in Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"filetype" : {"type" : 2, "name" : "legumes", "parentId" : folder_id}}
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data = json.loads(r.content)
+folder2_id = data["filepayload"]["uid"]
+
+print "==========" + url + "create file in Folder/Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"filetype" : {"type" : 3, "name" : "celeri", "parentId" : folder2_id}}
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data = json.loads(r.content)
+
+print "==========" + url + "create file in Folder/Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"filetype" : {"type" : 3, "name" : "oignon", "parentId" : folder2_id}}
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data = json.loads(r.content)
+
+print "==========" + url + "create folder to Folder/Folder/Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"filetype" : {"type" : 2, "name" : "dessert", "parentId" : folder2_id}}
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data = json.loads(r.content)
+folder3_id = data["filepayload"]["uid"]
+
+print "==========" + url + "create file in Folder/Folder/Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"filetype" : {"type" : 2, "name" : "foretNoire", "parentId" : folder3_id}}
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data = json.loads(r.content)
+folder3_id = data["filepayload"]["uid"]
+"""
+
 print "==========" + url + "delete GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-data = {"fileid" : {"type" : 1, "name" : "yellow1", "uid" : group_id}}
+data = {"fileid" : {"type" : 1, "name" : "yellow2", "uid" : group_id}}
 r = requests.post(url + "deletefile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 

@@ -15,7 +15,13 @@ def is_key_exist(typeKey, key):
     return r.exists(generated_key(typeKey, key))
 
 def is_key_exist_forPattern(key):
-    return len(list(r.scan_iter(match=key))) != 0
+    try:
+        has_key = len(list(r.scan_iter(match=key))) != 0
+        # true 100%
+        return has_key
+
+    except Exception as e:
+        return False
 
 def store_collection(typeKey, key, storeDict):
     key             = generated_key(typeKey, key)
@@ -71,4 +77,15 @@ def remove_with_key_pattern(p_key=""):
     return did_deleted
 
 def appendedValue(data, value):
-    return data + "|" + value
+    if data == "":
+        return value
+    else:
+        return data + "|" + value
+
+def removedValue(data, value):
+    data = data.replace(value, "")
+
+    if data[-1:] == "|":
+        data = data[:-1]
+
+    return data
