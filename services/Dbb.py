@@ -23,9 +23,9 @@ def is_key_exist_forPattern(key):
     except Exception as e:
         return False
 
-def store_collection(typeKey, key, storeDict):
-    key             = generated_key(typeKey, key)
-    already_exist   = r.exists(key)
+def store_collection(typeKey="", key="", storeDict=""):
+    if typeKey != "" :
+        key = generated_key(typeKey, key)
 
     r.hmset(key, storeDict)
 
@@ -34,7 +34,7 @@ def collection_for_Pattern(pattern=""):
     try:
         key = value.next()
         return r.hgetall(key)
-    
+
     except Exception as e:
         return None
 

@@ -90,6 +90,27 @@ class CloudService:
         else:
             return error
 
+    def modify_file(self, from_error, request, owner_id):
+        if from_error == Error.SUCCESS:
+
+            error, data = validate_json(request, {"filepayload": {
+            "type" : "", "name" : "", "uid" : "", "parentId" : "", "owner" : "",
+            "title" : "", "date" : "", "rules" : "", "payload" : ""}})
+
+            if error == Error.SUCCESS:
+                data        = data["filepayload"]
+                pattern_key = "*" + data["uid"]
+                key         = Dbb.value_for_key(key=pattern_key)
+
+                if key is not None:
+                    key = key.next()
+
+                Dbb.store_collection(key=key, storeDict=data)
+
+            return error
+        else:
+            return error
+
     def get_files_header(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
             error, data = validate_json(request, {"fileids": []});
@@ -99,7 +120,6 @@ class CloudService:
                 value = Dbb.collection_for_Pattern("*" + uid)
 
                 if value is not None:
-                    print "VALUE ", value, uid
                     value = unbunchify(FileHeader.dictionnary_to_fileHeader(value))
                     list_uid.append(value)
 
