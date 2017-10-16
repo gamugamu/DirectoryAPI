@@ -117,7 +117,7 @@ r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginr
 print r.content + "\n"
 
 print "==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-data = {"filetype" : {"type" : 1, "name" : "yellow0", "parentId" : ""}}
+data = {"filetype" : {"type" : 1, "name" : "yellow1", "parentId" : ""}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 data = json.loads(r.content)
@@ -129,12 +129,14 @@ data = {"filetype" : {"type" : 3, "name" : "subYellow", "parentId" : group_id}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 data = json.loads(r.content)
+file1_id = data["filepayload"]["uid"]
 
 print "==========" + url + "create File in Group (2)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
 data = {"filetype" : {"type" : 3, "name" : "subGreen", "parentId" : group_id}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 data = json.loads(r.content)
+file2_id = data["filepayload"]["uid"]
 
 print "==========" + url + "create File in Group (3)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
 data = {"filetype" : {"type" : 3, "name" : "subRed", "parentId" : group_id}}
@@ -149,12 +151,13 @@ r = requests.post(url + "deletefile", headers=headers_token, data=json.dumps(dat
 print r.content + "\n"
 data = json.loads(r.content)
 
-print "==========" + url + "get header " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-data = {"fileids" : [group_id]}
-print "send data ", data
+print "==========" + url + "get headers " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"fileids" : [group_id, file2_id, file1_id]}
+print data
 r = requests.post(url + "filesheader", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 data = json.loads(r.content)
+
 
 """
 print "==========" + url + "create Folder in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="

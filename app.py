@@ -99,5 +99,6 @@ def files_header():
     user_id             = Security.user_id_from_request(request)
     error, files_header = cloud.get_files_header(error, request, user_id)
     errorDesc           = Security.Error.asDescription(error)
-
+    print "files_header ", files_header
+    
     return json.dumps({"error" : errorDesc.__dict__, "filesheader" : files_header})

@@ -92,13 +92,21 @@ class CloudService:
 
     def get_files_header(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
-            error, data = validate_json(request, {"fileids": []})
-            value       = Dbb.collection_for_Pattern("*_" + data["fileids"][0])
+            error, data = validate_json(request, {"fileids": []});
+            list_uid = [];
 
-            if value == None:
+            for uid in data["fileids"]:
+                value = Dbb.collection_for_Pattern("*" + uid)
+
+                if value is not None:
+                    print "VALUE ", value, uid
+                    value = unbunchify(FileHeader.dictionnary_to_fileHeader(value))
+                    list_uid.append(value)
+
+            if len(list_uid) == 0:
                 return Error.REDIS_KEY_UNKNOWN, FileHeader().__dict__
             else:
-                return Error.SUCCESS, unbunchify(FileHeader.dictionnary_to_fileHeader(value))
+                return Error.SUCCESS, list_uid
         else:
             return error, FileHeader().__dict__
 
