@@ -82,8 +82,8 @@ class CloudService:
                     e, r = self.delete_file_from_server(file_id, file_name)
 
                     if e == Error.SUCCESS and r.status_code == 200:
-                        didremove = Dbb.remove_with_key_pattern("*" + file_id)
-                        print "DID_REMOVE ", didremove
+                        # child
+                        self.remove_file_from_parent(file_id)
                         return Error.SUCCESS
                     else:
                         return Error.FAILED_DELETE_FILE
@@ -98,7 +98,7 @@ class CloudService:
             if value == None:
                 return Error.REDIS_KEY_UNKNOWN, FileHeader().__dict__
             else:
-                return Error.SUCCESS, unbunchify(FileHeader.dictionnary_to_filesHeader(value))
+                return Error.SUCCESS, unbunchify(FileHeader.dictionnary_to_fileHeader(value))
         else:
             return error, FileHeader().__dict__
 
@@ -345,3 +345,21 @@ class CloudService:
         user["group"]   = Dbb.removedValue(user["group"], group_id)
 
         Dbb.store_collection(Type.USER.name, user_id, user)
+
+    def remove_file_from_parent(self, file_id):
+        file_pattern    = "*" + file_id
+        file_           = bunchify(Dbb.collection_for_Pattern(file_pattern))
+
+        parent_pattern   = "*" + file_.parentId
+        parent           = bunchify(Dbb.collection_for_Pattern(parent_pattern))
+        parent           = FileHeader.dictionnary_to_fileHeader(parent)
+
+        #remove childs from parent
+        parent.childsId.remove(file_id)
+
+        # remove
+        type_file = FileType.GROUP.name if int(parent.type) == int(FileType.GROUP.value) else FileType.FOLDER.name
+        #update
+        Dbb.remove_with_key_pattern(file_pattern)
+        parent = FileHeader.fileHeader_to_dictionnary(parent)
+        Dbb.store_collection(type_file, parent["uid"], parent)

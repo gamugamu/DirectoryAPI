@@ -22,11 +22,17 @@ class FileHeader(FileID):
         self.childsId   = childsId
 
     @staticmethod
-    def dictionnary_to_filesHeader(dict):
+    def dictionnary_to_fileHeader(dict):
         file            = bunchify(dict)
         file.childsId   = file.childsId.split("|")
         file.parentId   = file.parentId.split("|")
         return file
+    
+    @staticmethod
+    def fileHeader_to_dictionnary(file_header):
+        file_header.childsId   = '|'.join(file_header.childsId)
+        file_header.parentId   = '|'.join(file_header.parentId)
+        return unbunchify(file_header)
 
 class FilePayload(FileHeader):
     def __init__(self, payload="", *args, **kwargs):

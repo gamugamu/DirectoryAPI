@@ -117,7 +117,7 @@ r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginr
 print r.content + "\n"
 
 print "==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-data = {"filetype" : {"type" : 1, "name" : "yellow3", "parentId" : ""}}
+data = {"filetype" : {"type" : 1, "name" : "yellow0", "parentId" : ""}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 data = json.loads(r.content)
