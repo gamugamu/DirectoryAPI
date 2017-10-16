@@ -22,6 +22,8 @@ class Error(Enum):
     USER_ALREADY_LOGGED         = "33"
     FAILED_CREATE_GROUP         = "70"
     FAILED_DELETE_GROUP         = "71"
+    FAILED_DELETE_FILE          = "73"
+
     EXCEPTION                   = "100"
     REDIS_KEY_UNKNOWN           = "101"
     REDIS_KEY_ALREADY_EXIST     = "102"
@@ -47,6 +49,7 @@ class Error(Enum):
             "33" : "You are already logged",
             "70" : "Error : Cannot create group.",
             "71" : "Error : Cannot delete group",
+            "73" : "Error : Cannot delete file",
             "100": "Exception while communicating with BackBlaze",
             "101": "Exception, data not found in database (Redis)",
             "102": "Exception, Key already exist in (Redis) database"

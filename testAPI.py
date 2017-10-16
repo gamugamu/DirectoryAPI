@@ -74,7 +74,7 @@ r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps(
 print r.content + "\n"
 
 print "==========" + url + "createaccount " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-email               = str(uuid.uuid4())[0:6] + "@gmail.com"
+email               = "jeanpierre@gmail.com"#str(uuid.uuid4())[0:6] + "@gmail.com"
 password            = "superpassE0"
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
@@ -123,13 +123,40 @@ print r.content + "\n"
 data = json.loads(r.content)
 group_id = data["filepayload"]["uid"]
 
-"""
+
 print "==========" + url + "create File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
 data = {"filetype" : {"type" : 3, "name" : "subYellow", "parentId" : group_id}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 data = json.loads(r.content)
 
+print "==========" + url + "create File in Group (2)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"filetype" : {"type" : 3, "name" : "subGreen", "parentId" : group_id}}
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data = json.loads(r.content)
+
+print "==========" + url + "create File in Group (3)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"filetype" : {"type" : 3, "name" : "subRed", "parentId" : group_id}}
+r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data    = json.loads(r.content)
+file_id = data["filepayload"]["uid"]
+
+print "==========" + url + "delete File in Group (3)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"fileid" : {"type" : 3, "name" : data["filepayload"]["name"], "uid" : file_id}}
+r = requests.post(url + "deletefile", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data = json.loads(r.content)
+
+print "==========" + url + "get header " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+data = {"fileids" : [group_id]}
+print "send data ", data
+r = requests.post(url + "filesheader", headers=headers_token, data=json.dumps(data))
+print r.content + "\n"
+data = json.loads(r.content)
+
+"""
 print "==========" + url + "create Folder in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
 data = {"filetype" : {"type" : 2, "name" : "fruits", "parentId" : group_id}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
@@ -177,10 +204,12 @@ data = json.loads(r.content)
 folder3_id = data["filepayload"]["uid"]
 """
 
+
 print "==========" + url + "delete GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
 data = {"fileid" : {"type" : 1, "name" : "yellow2", "uid" : group_id}}
 r = requests.post(url + "deletefile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
+
 
 
 """

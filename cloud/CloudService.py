@@ -16,7 +16,7 @@ from services.Error import Error
 from Model.File import FilePayload, FileHeader
 
 class CloudService:
-    id_and_key          = '191c9cd81236:00126b7b79d0d100c93ddc6b6e42f113090d8c8723'
+    id_and_key          = '191c9cd81236:001a7ee30eaf15bbda5fa0b1d7fb06210f5bcadd3e'
     account_id          = "191c9cd81236" # Obtained from your B2 account page
     basic_auth_string   = 'Basic ' + base64.b64encode(id_and_key)
 
@@ -77,10 +77,28 @@ class CloudService:
                     # (oui, c'est complétement débile!)
                     return self.delete_bucket(file_id, owner_id)
                 else: # file or folder
-                    print "NOT DONE ----------"
-                    pass
+                    file_name = data["fileid"]["name"]
+
+                    e, r = self.delete_file_from_server(file_id, file_name)
+
+                    if e == Error.SUCCESS and r.status_code == 200:
+                        return Error.SUCCESS
+                    else:
+                        return Error.FAILED_DELETE_FILE
         else:
             return error
+
+    def get_files_header(self, from_error, request, owner_id):
+        if from_error == Error.SUCCESS:
+            error, data = validate_json(request, {"fileids": []})
+            value       = Dbb.collection_for_Pattern("*_" + data["fileids"][0])
+
+            if value == None:
+                return Error.REDIS_KEY_UNKNOWN, FileHeader().__dict__
+            else:
+                return Error.SUCCESS, unbunchify(FileHeader.dictionnary_to_filesHeader(value))
+        else:
+            return error, FileHeader().__dict__
 
     def delete_file_from_server(self, file_id, file_name):
         params = {  'fileName': file_name,
@@ -165,8 +183,7 @@ class CloudService:
                 if e == Error.SUCCESS and r.status_code == 200:
                     Dbb.remove_with_key_pattern(p_key= "*|" + file_id)
                 else:
-                    print "couldn't delete file ", e, r.content
-                    return e
+                    return Error.FAILED_DELETE_FILE
             #les suppressions ont réussies
             return Error.SUCCESS
         else:
@@ -276,7 +293,6 @@ class CloudService:
                     return Error.NONE, FilePayload()
             else:
                 # l'entrée existe déjà pour ce fichier
-                print "key already exist***"
                 return Error.REDIS_KEY_ALREADY_EXIST, FilePayload()
 
 

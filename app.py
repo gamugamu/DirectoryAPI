@@ -91,3 +91,13 @@ def delete_file():
     errorDesc           = Security.Error.asDescription(error)
 
     return json.dumps({"error" : errorDesc.__dict__})
+
+@app.route(version_uri + 'filesheader', methods=['POST'])
+def files_header():
+    securityLvl         = Security.SecurityLevel.LOGGED
+    error               = Security.check_if_token_allow_access(request, securityLvl)
+    user_id             = Security.user_id_from_request(request)
+    error, files_header = cloud.get_files_header(error, request, user_id)
+    errorDesc           = Security.Error.asDescription(error)
+
+    return json.dumps({"error" : errorDesc.__dict__, "filesheader" : files_header})

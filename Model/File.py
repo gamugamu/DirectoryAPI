@@ -1,4 +1,5 @@
 # coding: utf8
+from bunch import bunchify, unbunchify
 
 class FileType(object):
     def __init__(self, type=0, name=""):
@@ -19,6 +20,13 @@ class FileHeader(FileID):
         self.parentId   = parentId
         self.rules      = rules
         self.childsId   = childsId
+
+    @staticmethod
+    def dictionnary_to_filesHeader(dict):
+        file            = bunchify(dict)
+        file.childsId   = file.childsId.split("|")
+        file.parentId   = file.parentId.split("|")
+        return file
 
 class FilePayload(FileHeader):
     def __init__(self, payload="", *args, **kwargs):

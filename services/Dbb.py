@@ -29,6 +29,15 @@ def store_collection(typeKey, key, storeDict):
 
     r.hmset(key, storeDict)
 
+def collection_for_Pattern(pattern=""):
+    value = value_for_key(key=pattern)
+    try:
+        key = value.next()
+        return r.hgetall(key)
+    
+    except Exception as e:
+        return None
+
 def collection_for_Key(typeKey="", key=""):
     if key == None:
         return None
