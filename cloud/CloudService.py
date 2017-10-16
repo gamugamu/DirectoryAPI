@@ -82,6 +82,8 @@ class CloudService:
                     e, r = self.delete_file_from_server(file_id, file_name)
 
                     if e == Error.SUCCESS and r.status_code == 200:
+                        didremove = Dbb.remove_with_key_pattern("*" + file_id)
+                        print "DID_REMOVE ", didremove
                         return Error.SUCCESS
                     else:
                         return Error.FAILED_DELETE_FILE
