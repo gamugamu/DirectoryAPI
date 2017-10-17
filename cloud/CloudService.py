@@ -25,6 +25,8 @@ class CloudService:
     def connect_to_cloud(self):
         pass
 
+################# SERVICE ######################
+
     def create_file(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
             error, data = validate_json(request, {"filetype": {"name" : "", "type" : "", "parentId" : ""}})
@@ -68,15 +70,8 @@ class CloudService:
                     return self.delete_bucket(file_id, owner_id)
                 else: # file or folder
                     file_name = data["fileid"]["name"]
-
-                    e, r = self.delete_file_from_server(file_id, file_name)
-
-                    if e == Error.SUCCESS and r.status_code == 200:
-                        # child
-                        self.remove_file_from_parent(file_id)
-                        return Error.SUCCESS
-                    else:
-                        return Error.FAILED_DELETE_FILE
+                    self.remove_file_from_parent(file_id)
+                    return Error.SUCCESS
         else:
             return error
 
@@ -116,6 +111,7 @@ class CloudService:
 
                 if value is not None:
                     value = unbunchify(FileHeader.dictionnary_to_fileHeader(value))
+                    value.pop('payload', None) # seul les headers nous interressent
                     list_uid.append(value)
 
             if len(list_uid) == 0:
@@ -144,9 +140,9 @@ class CloudService:
         else:
             return error, FilePayload().__dict__
 
-    # limité à 10
+################# LOGIC ######################
+
     def create_new_bucket(self, bucket_name, owner_id):
-        print "Try to create a new bucket...", bucket_name
         bucket_id   = uuid.uuid4().hex
         group       = FilePayload(  uid    = bucket_id,
                                     name   = bucket_name,
@@ -187,6 +183,61 @@ class CloudService:
         #les suppressions ont réussies
         return Error.SUCCESS
 
+    def create_file_in_bucket(self, bucket, owner_id, file_name, uri_path, parentId):
+        if bucket is not None:
+            uri_path      = self.append_path(uri_path, file_name)
+            full_uri_path = self.append_path(bucket.name, uri_path)
+
+            is_entry_already_exist = Dbb.is_key_exist_forPattern("*|" + full_uri_path + "|*")
+
+            # Si il n'existe pas d'entrée, alors on peux créer le fichier
+            if is_entry_already_exist == False:
+                # creation du fichier redis
+                if parentId == "":
+                    parentId = bucket.uid
+
+                file_id = uuid.uuid4().hex
+                file_   = FilePayload(  uid       = file_id,
+                                        name      = self.sanityse_path(file_name),
+                                        type      = FileType.FILE.value,
+                                        date      = generate_date_now(),
+                                        owner     = [owner_id],
+                                        parentId  = parentId)
+
+                full_uri_path       = self.sanityse_path(full_uri_path)
+                redis_id            = "|" + full_uri_path + "|" + file_id
+                bucket.childsId     = Dbb.appendedValue(bucket.childsId, file_id)
+
+                #update data
+                Dbb.store_collection(FileType.FILE.name, redis_id, file_.__dict__)
+                Dbb.store_collection(FileType.GROUP.name, bucket.uid, unbunchify(bucket))
+
+                return Error.SUCCESS, file_
+            else:
+                # l'entrée existe déjà pour ce fichier
+                return Error.REDIS_KEY_ALREADY_EXIST, FilePayload()
+
+    def remove_file_from_parent(self, file_id):
+        file_pattern    = "*" + file_id
+        file_           = bunchify(Dbb.collection_for_Pattern(file_pattern))
+
+        parent_pattern   = "*" + file_.parentId
+        parent           = Dbb.collection_for_Pattern(parent_pattern)
+        parent           = FileHeader.dictionnary_to_fileHeader(parent)
+
+        #remove childs from parent
+        parent.childsId.remove(file_id)
+
+        # remove
+        type_file = FileType.GROUP.name if int(parent.type) == int(FileType.GROUP.value) else FileType.FOLDER.name
+
+        #update
+        Dbb.remove_with_key_pattern(file_pattern)
+        parent = FileHeader.fileHeader_to_dictionnary(parent)
+        Dbb.store_collection(type_file, parent["uid"], parent)
+
+################# GRAPH ######################
+
     def retrieve_bucket_data_from_graph(self, parent_id, uri_path=""):
         b_key   = "*_" + parent_id
         f_key   = "*|" + parent_id
@@ -222,40 +273,21 @@ class CloudService:
             print "EXCEPTION: ", e, key, "is not from graph"
             return Error.REDIS_KEY_UNKNOWN, None, ""
 
-    def create_file_in_bucket(self, bucket, owner_id, file_name, uri_path, parentId):
-        if bucket is not None:
-            uri_path      = self.append_path(uri_path, file_name)
-            full_uri_path = self.append_path(bucket.name, uri_path)
+################# USER OWNERSHIP ######################
 
-            is_entry_already_exist = Dbb.is_key_exist_forPattern("*|" + full_uri_path + "|*")
+    def add_user_ownership(self, user_id, group_id):
+        user            = Dbb.collection_for_Key(typeKey=Type.USER.name, key=user_id)
+        user["group"]   = Dbb.appendedValue(user["group"], group_id)
 
-            # Si il n'existe pas d'entrée, alors on peux créer le fichier
-            if is_entry_already_exist == False:
-                # creation du fichier redis
-                if parentId == "":
-                    parentId = bucket.uid
+        Dbb.store_collection(Type.USER.name, user_id, user)
 
-                file_id = uuid.uuid4().hex
-                file_   = FilePayload(  uid       = file_id,
-                                        name      = self.sanityse_path(file_name),
-                                        type      = FileType.FILE.value,
-                                        date      = generate_date_now(),
-                                        owner     = [owner_id],
-                                        parentId  = parentId)
+    def remove_user_ownership(self, user_id, group_id):
+        user            = Dbb.collection_for_Key(typeKey=Type.USER.name, key=user_id)
+        user["group"]   = Dbb.removedValue(user["group"], group_id)
 
-                full_uri_path       = self.sanityse_path(full_uri_path)
-                redis_id            = "|" + full_uri_path + "|" + file_id
-                bucket.childsId     = Dbb.appendedValue(bucket.childsId, file_id)
+        Dbb.store_collection(Type.USER.name, user_id, user)
 
-                print "ADDED IN BUCKET ", bucket.childsId
-                    #update data
-                Dbb.store_collection(FileType.FILE.name, redis_id, file_.__dict__)
-                Dbb.store_collection(FileType.GROUP.name, bucket.uid, unbunchify(bucket))
-
-                return Error.SUCCESS, file_
-            else:
-                # l'entrée existe déjà pour ce fichier
-                return Error.REDIS_KEY_ALREADY_EXIST, FilePayload()
+################# PATH ######################
 
     def append_path(self, path, new_value):
         if path == "":
@@ -269,33 +301,3 @@ class CloudService:
 
     def append_as_folder(self, path):
         return path + "/.bzEmpty"
-
-    def remove_file_from_parent(self, file_id):
-        file_pattern    = "*" + file_id
-        file_           = bunchify(Dbb.collection_for_Pattern(file_pattern))
-
-        parent_pattern   = "*" + file_.parentId
-        parent           = bunchify(Dbb.collection_for_Pattern(parent_pattern))
-        parent           = FileHeader.dictionnary_to_fileHeader(parent)
-
-        #remove childs from parent
-        parent.childsId.remove(file_id)
-
-        # remove
-        type_file = FileType.GROUP.name if int(parent.type) == int(FileType.GROUP.value) else FileType.FOLDER.name
-        #update
-        Dbb.remove_with_key_pattern(file_pattern)
-        parent = FileHeader.fileHeader_to_dictionnary(parent)
-        Dbb.store_collection(type_file, parent["uid"], parent)
-
-    def add_user_ownership(self, user_id, group_id):
-        user            = Dbb.collection_for_Key(typeKey=Type.USER.name, key=user_id)
-        user["group"]   = Dbb.appendedValue(user["group"], group_id)
-
-        Dbb.store_collection(Type.USER.name, user_id, user)
-
-    def remove_user_ownership(self, user_id, group_id):
-        user            = Dbb.collection_for_Key(typeKey=Type.USER.name, key=user_id)
-        user["group"]   = Dbb.removedValue(user["group"], group_id)
-
-        Dbb.store_collection(Type.USER.name, user_id, user)
