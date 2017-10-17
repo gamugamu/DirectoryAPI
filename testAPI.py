@@ -129,7 +129,8 @@ data = {"filetype" : {"type" : 3, "name" : "subYellow", "parentId" : group_id}}
 r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 data = json.loads(r.content)
-file1 = data
+file1       = data
+file1_id    = data["filepayload"]["uid"]
 
 print "==========" + url + "modify File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
 
@@ -137,15 +138,14 @@ file1["filepayload"]["payload"] = "This is a content from yellow"
 r = requests.post(url + "modifyfile", headers=headers_token, data=json.dumps(file1))
 print r.content + "\n"
 
-##TODO
-"""
+
 print "==========" + url + "get payload " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-data = {"fileids" : [group_id, file2_id, file1_id]}
+data = {"fileids" : [file1_id]}
 print data
-r = requests.post(url + "filesheader", headers=headers_token, data=json.dumps(data))
+r = requests.post(url + "filespayload", headers=headers_token, data=json.dumps(data))
 print r.content + "\n"
 data = json.loads(r.content)
-"""
+
 
 """
 print "==========" + url + "create File in Group (2)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="

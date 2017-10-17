@@ -104,6 +104,7 @@ class CloudService:
 
                 if key is not None:
                     key = key.next()
+                #update content in backblaze
 
                 Dbb.store_collection(key=key, storeDict=data)
 
@@ -129,6 +130,25 @@ class CloudService:
                 return Error.SUCCESS, list_uid
         else:
             return error, FileHeader().__dict__
+
+    def get_files_payload(self, from_error, request, owner_id):
+        if from_error == Error.SUCCESS:
+            error, data = validate_json(request, {"fileids": []});
+            list_uid = [];
+
+            for uid in data["fileids"]:
+                value = Dbb.collection_for_Pattern("*" + uid)
+                print "VALUE ", value
+                if value is not None:
+                    value = unbunchify(FileHeader.dictionnary_to_fileHeader(value))
+                    list_uid.append(value)
+
+            if len(list_uid) == 0:
+                return Error.REDIS_KEY_UNKNOWN, FilePayload().__dict__
+            else:
+                return Error.SUCCESS, list_uid
+        else:
+            return error, FilePayload().__dict__
 
     def delete_file_from_server(self, file_id, file_name):
         params = {  'fileName': file_name,
