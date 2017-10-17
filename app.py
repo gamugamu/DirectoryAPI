@@ -10,8 +10,8 @@ from cloud import CloudService
 from helper import Sanityzer
 
 app         = Flask(__name__)
-version     = "0.0.1"
-version_uri = "/rest/"
+version     = "0.0.2"
+version_uri = "/rest/" + version + "/"
 
 # Les données ne sont pas stocké sur le même serveur que l'API.
 cloud = CloudService.CloudService()
@@ -22,7 +22,7 @@ def apply_caching(response):
     response.headers["Version"] = version
     return response
 
-@app.route('/')
+@app.route(version_uri)
 def home():
     return "ApiDrectory v0.0.1"
 

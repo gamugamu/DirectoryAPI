@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 # coding: utf8
 import datetime
+
+from services.Error import Error
+from services.JSONValidator import iterate_through_graph
 from datetime import datetime, timedelta
 import base64
 import uuid
@@ -31,9 +34,9 @@ Fa01_DATE_FORMAT            = "%Y-%m-%d_%H:%M:%S"
 TOKEN_REQU_HEADER           = "token-request"
 TOKEN_HEADER                = "token"
 
-urlRoot = "http://127.00.0.1:8000/rest/"
-version = ""
-url     = urlRoot + version
+urlRoot     = "http://127.00.0.1:8000"
+version_API = "0.0.2"
+url         = urlRoot + "/rest/" + version_API + "/"
 
 
 def encrypt(message):
@@ -44,42 +47,71 @@ def decrypt(cipher):
     obj2 = AES.new(AKEY, AES.MODE_CFB, iv)
     return obj2.decrypt(base64.urlsafe_b64decode(cipher))
 
-print url
 
 apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 headers_requestToken    = {'content-type': 'application/json', 'token-request' : apirequestkey}
 
-print "========== launching test on " + urlRoot + " API. ===========\n"
-print "==========" +url + "asktoken" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+print "\n\n\n========== launching test on " + url + " API. ==========="
+print  color.BOLD + color.PURPLE + "[#Pa01] [#Pa02] [#Pa03]" + color.END
+r = requests.get(url)
+print "[#Pa01] statuscode: ", r.status_code, "== 200", r.status_code == 200
+print "[#Pa02] uri version: ", url, r.status_code == 200
+print "[#Pa03] header version: ", r.headers["Version"], r.headers["Version"] == version_API
 
-r = requests.get(url + "asktoken", headers=headers_requestToken)
-print r.content + "\n"
+print "\n========== " +url + "asktoken ==========="
+print  color.BOLD + color.PURPLE + "[#SaP01] [#SaD01]" + color.END
+
+r       = requests.get(url + "asktoken", headers=headers_requestToken)
 data    = json.loads(r.content)
 token   = data["token"]["hash"]
+print "[#SaP01] url: ", r.status_code, "== 200", r.status_code == 200
+
+e = iterate_through_graph(data, {"error" : {"code" : "", "description" : ""}, "token" : {"hash" : "", "right" : "", "dateLimit" : ""}})
+print "[#SaD01] datastructure: ", e.value == Error.SUCCESS.value, e
+headers_requestToken    = {'content-type': 'application/json', 'token-request' : "invalid_key"}
+r       = requests.get(url + "asktoken", headers=headers_requestToken)
+data    = json.loads(r.content)
+e       = iterate_through_graph(data, {"error" : {"code" : "", "description" : ""}, "token" : {"hash" : "", "right" : "", "dateLimit" : ""}})
+print "[#SaD01] with bad apiKey", int(data["error"]["code"]) == 2 # code invalid_apikey
+print "[#SaD01] get blank datastructure", e.value == Error.SUCCESS.value
+
 
 headers_token    = {'content-type': 'application/json', 'token' : token}
 
-print "==========" + url + "createaccount" + color.BOLD + color.CYAN + "(must fail email format)" + color.END + "==========="
-email               = "fluck.com"
+print "\n========== " + url + "createaccount ==========="
+print  color.BOLD + color.PURPLE + "[#SbP01] [#SbD01] [#SbR01] [#SbR02]" + color.END
+
+email               = str(uuid.uuid4())[0:6] + "fd.com"
 password            = "superpassE0"
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
-r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
-print r.content + "\n"
+r       = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
+data    = json.loads(r.content)
 
-print "==========" + url + "createaccount " + color.BOLD + color.CYAN + "(must fail password format)" + color.END + "==========="
-email               = "fluck@fdss.com"
+print "[#SbR02] bad email ", int(data["error"]["code"]) == 10 # invalid_user_email
+
+email               = str(uuid.uuid4())[0:6] + "@fddfs.com"
 password            = "superp___0"
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
-r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
-print r.content + "\n"
+r                   = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
+data                = json.loads(r.content)
+print "[#SbR02] bad password ", int(data["error"]["code"]) == 11 #invalid_user_password
 
-print "==========" + url + "createaccount " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
 email               = str(uuid.uuid4())[0:6] + "@gmail.com"
 password            = "superpassE0"
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
-print r.content + "\n"
+data                = json.loads(r.content)
 
+print "[#SbPO1] url", r.status_code == 200
+e = iterate_through_graph(data, {"error" : {"code" : "", "description" : ""}})
+
+print "[#SbDO1] datastructure", e.value == Error.SUCCESS.value
+r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
+data                = json.loads(r.content)
+print "[#SbRO1] compte already exist", int(data["error"]["code"]) == 30 #user_already_exist
+
+
+"""
 print "==========" + url + "login " + color.BOLD + color.CYAN + "(must fail password format)" + color.END + "==========="
 crypted_password    = encrypt(AKEY + "|" + "fdklfdp" + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
@@ -232,7 +264,7 @@ print "==========" + url + "login again with same deleted account " + color.BOLD
 crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
 r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
 print r.content + "\n"
-
+"""
 #data=json.dumps(payload),
 
 #r = requests.get(urlRoot)
