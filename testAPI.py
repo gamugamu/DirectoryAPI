@@ -60,7 +60,6 @@ def decrypt(cipher):
     return obj2.decrypt(base64.urlsafe_b64decode(cipher))
 
 def performtest():
-    print "performtest"
     apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     headers_requestToken    = {'content-type': 'application/json', 'token-request' : apirequestkey}
 

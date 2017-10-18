@@ -57,6 +57,15 @@ def home():
 
     return render_template('index.html', **locals())
 
+@app.route(version_uri + 'testmarkdown')
+def test_markdown():
+    print "test_markdown"
+    content = file('testmarkdown.md')
+    content = Environment().from_string(content).render()
+    content = Markup(markdown.markdown(content, extensions=['markdown.extensions.extra', 'markdown.extensions.toc', 'superscript', 'markdown.extensions.nl2br', 'markdown.extensions.fenced_code', 'markdown.extensions.codehilite', 'pymdownx.emoji']))
+
+    return render_template('index.html', **locals())
+
 @app.route(version_uri + 'asktoken')
 def askToken():
     securityLvl = Security.SecurityLevel.NONE
