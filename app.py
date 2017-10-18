@@ -1,15 +1,31 @@
 # coding: utf8
 import json
+import markdown
 
 from flask import Flask
 from flask import Response
 from flask import request, url_for
+from flask import render_template
+from flask import Markup
+from flask_bootstrap import Bootstrap
+from flask_flatpages import FlatPages, pygments_style_defs
+
+from settings import file
+
 from services import Security
 from services import Login
 from cloud import CloudService
 from helper import Sanityzer
 
+FLATPAGES_AUTO_RELOAD = True
+FLATPAGES_EXTENSION = '.md'
+FLATPAGES_ROOT = 'content'
+
 app         = Flask(__name__)
+Bootstrap(app)
+app.config["CACHE_TYPE"] = "null"
+flatpages = FlatPages(app)
+
 version     = "0.0.2"
 version_uri = "/rest/" + version + "/"
 
@@ -17,14 +33,21 @@ version_uri = "/rest/" + version + "/"
 cloud = CloudService.CloudService()
 cloud.connect_to_cloud()
 
+app.config['DEBUG'] = True
+
 @app.after_request
 def apply_caching(response):
     response.headers["Version"] = version
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
     return response
 
 @app.route(version_uri)
 def home():
-    return "ApiDrectory v0.0.1"
+    content = file('documentation.md')
+    content = Markup(markdown.markdown(content, extensions=['markdown.extensions.extra', 'markdown.extensions.toc', 'superscript', 'markdown.extensions.nl2br', 'markdown.extensions.fenced_code', 'markdown.extensions.codehilite', 'pymdownx.emoji']))
+    return render_template('index.html', **locals())
 
 @app.route(version_uri + 'asktoken')
 def askToken():
