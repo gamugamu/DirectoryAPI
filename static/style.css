@@ -9,7 +9,7 @@ th, td {
     padding: 8px;
 }
 
-tr:nth-child(even){background-color: #f2f2f2}
+/*tr:nth-child(even){background-color: #f2f2f2}*/
 
 img {
  border: 0 none!important;
@@ -18,7 +18,28 @@ img {
 }
 
 .emojione {
-  background-color: red
     height: 20px;
     width: 20px;
+}
+
+.uri {
+    background-color: #9fff9f;
+}
+
+.header {
+    background-color: #b8ffb8;
+}
+
+.get {
+    background-color: white;
+    border-top: 1px solid #FFFFFF;
+    border-right: 1px solid #FFFFFF;
+}
+
+.post {
+    background-color: yellow;
+}
+
+.return {
+    background-color: #ebffeb;
 }

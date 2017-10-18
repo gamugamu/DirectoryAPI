@@ -51,7 +51,7 @@ def apply_caching(response):
 
 @app.route(version_uri)
 def home():
-    content = file('documentation.md')
+    content = file('documentation.md').decode('utf8')
     content = Environment().from_string(content).render()
     content = Markup(markdown.markdown(content, extensions=['markdown.extensions.extra', 'markdown.extensions.toc', 'superscript', 'markdown.extensions.nl2br', 'markdown.extensions.fenced_code', 'markdown.extensions.codehilite', 'pymdownx.emoji']))
 
@@ -61,7 +61,7 @@ def home():
 def test_markdown():
     print "test_markdown"
     content = file('testmarkdown.md')
-    content = Environment().from_string(content).render()
+    content = Environment().from_string(content).render().decode('utf-8')
     content = Markup(markdown.markdown(content, extensions=['markdown.extensions.extra', 'markdown.extensions.toc', 'superscript', 'markdown.extensions.nl2br', 'markdown.extensions.fenced_code', 'markdown.extensions.codehilite', 'pymdownx.emoji']))
 
     return render_template('index.html', **locals())

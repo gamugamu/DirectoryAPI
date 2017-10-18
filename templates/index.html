@@ -20,8 +20,6 @@
 {% endblock %}
 
 {% block navbar %}
-<div class="navbar navbar-fixed-top">
-</div>
 {% endblock %}
 
 {% block body_attribs %}
@@ -29,9 +27,17 @@ ng-controller="WordcountController"
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-  <h1>Hello, Bootstrap</h1>
-  {{ content }}
-
+{{super()}}
+<div class="jumbotron jumbotron-fluid">
+  <div class="container">
+    <h1 class="display-3">Directory-API</h1>
+  </div>
 </div>
-{% endblock %}
+<div class="container-fluid">
+
+  {{ content }}
+</div>
+{%- block footer %}
+<footer>&copy; 2016 Awesome, Inc.</footer>
+{%- endblock footer %}
+{%- endblock content %}
