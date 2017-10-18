@@ -16,6 +16,8 @@ from services import Security
 from services import Login
 from cloud import CloudService
 from helper import Sanityzer
+from jinja2 import Environment
+from testAPI import performtest
 
 FLATPAGES_AUTO_RELOAD = True
 FLATPAGES_EXTENSION = '.md'
@@ -35,6 +37,10 @@ cloud.connect_to_cloud()
 
 app.config['DEBUG'] = True
 
+@app.route('/start', methods=['POST'])
+def get_counts():
+    return performtest()
+
 @app.after_request
 def apply_caching(response):
     response.headers["Version"] = version
@@ -46,7 +52,9 @@ def apply_caching(response):
 @app.route(version_uri)
 def home():
     content = file('documentation.md')
+    content = Environment().from_string(content).render()
     content = Markup(markdown.markdown(content, extensions=['markdown.extensions.extra', 'markdown.extensions.toc', 'superscript', 'markdown.extensions.nl2br', 'markdown.extensions.fenced_code', 'markdown.extensions.codehilite', 'pymdownx.emoji']))
+
     return render_template('index.html', **locals())
 
 @app.route(version_uri + 'asktoken')

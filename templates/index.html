@@ -1,11 +1,22 @@
 {% extends "bootstrap/base.html" %}
+
+{% block html %}
+{{super()}}
+<html ng-app="WordcountApp">
+{% endblock %}
+
 {% block title %}This is an example page{% endblock %}
 
 {% block styles %}
 {{super()}}
 <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
 <link href="{{ url_for('static', filename='codestyles.css') }}" type="text/css" rel="stylesheet">
+{% endblock %}
 
+{% block scripts %}
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+{{super()}}
 {% endblock %}
 
 {% block navbar %}
@@ -13,10 +24,14 @@
 </div>
 {% endblock %}
 
+{% block body_attribs %}
+ng-controller="WordcountController"
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
   <h1>Hello, Bootstrap</h1>
   {{ content }}
-</div>
 
+</div>
 {% endblock %}

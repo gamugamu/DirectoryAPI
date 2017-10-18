@@ -1,3 +1,12 @@
+{{ foo }}
+
+{% raw %}
+Le resultat du test apparait dans la console js
+<form role="form" ng-submit="getResults()">
+    <button type="submit" class="btn btn-default">Submit</button>
+</form>
+{% endraw %}
+
 ---
 People
 
@@ -561,7 +570,6 @@ see [how to change output](https://github.com/markdown-it/markdown-it-emoji#chan
 
 - 19^th^
 2^10^ is 1024.
-
 
 ### [Footnotes](https://github.com/markdown-it/markdown-it-footnote)
 
