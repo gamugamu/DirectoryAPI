@@ -5,7 +5,7 @@
 <html ng-app="WordcountApp">
 {% endblock %}
 
-{% block title %}This is an example page{% endblock %}
+{% block title %}Directory-API Documentation{% endblock %}
 
 {% block styles %}
 {{super()}}
@@ -28,14 +28,24 @@ ng-controller="WordcountController"
 
 {% block content %}
 {{super()}}
+
+
 <div class="jumbotron jumbotron-fluid">
   <div class="container">
     <h1 class="display-3">Directory-API</h1>
   </div>
 </div>
 <div class="container-fluid">
-
-  {{ content }}
+  <div class="row">
+      <!-- main -->
+      <div class="col-sm-9">
+        {{ content }}
+      </div>
+      <!-- sidebar -->
+      <div class="col-sm-3 flex-first flex-md-unordered" data-spy="affix" data-offset-top="197" id="sidebar">
+        {{ toc }}
+      </div>
+  </div>
 </div>
 {%- block footer %}
 <footer>&copy; 2016 Awesome, Inc.</footer>

@@ -3,10 +3,8 @@ import redis
 import os
 
 if "REDIS_URL" in os.environ:
-    print "REDIS_URL found ", os.environ['REDIS_URL']
     r = redis.from_url(os.environ['REDIS_URL'])
 else:
-    print "LOCALHOST"
     r  = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 def volatil_store(typeKey, key, storeDict, time):

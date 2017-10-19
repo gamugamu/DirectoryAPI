@@ -1,3 +1,4 @@
+/* elements */
 table {
     border-collapse: collapse;
     width: 100%;
@@ -8,13 +9,22 @@ th, td {
     text-align: left;
     padding: 8px;
 }
-
 /*tr:nth-child(even){background-color: #f2f2f2}*/
-
 img {
  border: 0 none!important;
  max-width: 100%!important;
  vertical-align: middle!important;
+}
+
+.container-fluid h1:before {
+    content: "•";
+    margin-right: 6px;
+}
+
+/* classe */
+.container-fluid h1{
+    padding-left: 20px;
+    font-style: italic;
 }
 
 .emojione {
@@ -22,12 +32,43 @@ img {
     width: 20px;
 }
 
+hr{
+    border: 0.5px solid black;
+
+}
+
+.toc {
+    display: none;
+    margin-left: -20px;
+    font-size: small;
+}
+
+.toc ul{
+ margin-left:-20px;
+}
+
+.jumbotron{
+  background-color: #424242;
+  color: white;
+}
+
+#sidebar .toc{
+  display: block;
+  padding-top: 20px;
+}
+
+.affix {
+     top: 0;
+     right: 0;
+ }
+
+/*tableau*/
 .uri {
-    background-color: #9fff9f;
+    background-color: #b2ebf2;
 }
 
 .header {
-    background-color: #b8ffb8;
+    background-color: #f0f1f2;
 }
 
 .get {
@@ -37,9 +78,13 @@ img {
 }
 
 .post {
-    background-color: yellow;
 }
 
 .return {
-    background-color: #ebffeb;
+    background-color: #ff4300;
+    color: white;
+}
+
+.return strong {
+  font-weight:normal;
 }
