@@ -1,5 +1,7 @@
 [TOC]
 
+Take me to [**#sPa01**](#sap01)
+
 ## Description:
 _Directories simule la structure d’un répertoire de fichiers. Permet de créer / supprimer des documents markdown avec une restriction de droits et gestion de groupe._
 
@@ -34,63 +36,438 @@ _Directories simule la structure d’un répertoire de fichiers. Permet de crée
 
 ## ASKTOKEN
 
-_Permet de recevoir un ***#Db02:Token*** qui permet de consommer les services de base de l’API. Les droits du token sont limité à ***#Ed01:unauth***._
+_Permet de recevoir un [**#Db02**:Token](#db02-token) qui permet de consommer les services de base de l’API. Les droits du token sont limité à ***[**#ED01:**](#ed01-right)unauth***._
 <br>
 
 commande| data
 ------- | -------------
 {: .uri } **URI** | [root]/rest/[v]/asktoken
-{: .header } **HEADER** | \{**token-request**: **#Fb01**:TokenRequest}
+{: .header } **HEADER** | \{**token-request**: [**#Fb01**:TokenRequest](**#Fb01**:TokenRequest)}
 {: .get } **GET**
-{: .return } **RETURN**  | \{**error**: **#Da00**:error, **token**: **#Db02**:token}  
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error), **token**: [**#Db02**:Token](#db02-token)}  
 
 ### #SaP01
 * Le service est de structure **[root]/rest/[v]/asktoken**.
-* Le header contient le **#Fb01**:TokenRequest.
+* Le header contient le [**#Fb01**:TokenRequest](**#Fb01**:TokenRequest).
 
 ### #SaD01
-* Retourne une data-structure de type {**error**: **#Da00**:Error, **token**: **#Db02**:Token}.
-* **En cas de succès**, retourne **#Da00**:Error[code:**success**] et un **#Db02**:Token[right:**unauth**].
-* **En cas d’échec**, si la clef d’API est incorrecte, retourne un **#Da00**:Error[code:**invalid_apikey**] et un **#Db02**:Token vide.
+* Retourne une data-structure de type {**error**: [**#Da00**:Error](#da00-error), **token**: [**#Db02**:Token](#db02-token)}.
+* **En cas de succès**, retourne [**#Da00**:Error](#da00-error)[**code**:success] et un [**#Db02**:Token](#db02-token)[**right**:unauth].
+* **En cas d’échec**, si la clef d’API est incorrecte, retourne un [**#Da00**:Error](#da00-error)[**code**:invalid_apikey] et un [**#Db02**:Token](#db02-token) vide.
 
 <br>
 ###### Exemple:
-~~~~.html
-curl --header "Content-Type: application/json" -H "token: 5895db72e1c944a4b186dd6101b80cf0|0|2017-10-07_20:09:24" http://127.00.0.1:8000 '{"loginrequest" : {"email" : "bebeUFW@gmail.com", "cryptedpassword" : "I7mHCIWiwTyyct50ENCkIHjGDcLfSQ3CT4HVkAYDtT63fDFjlrKheap5kaQ="}}'
-
-// output
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-<title>404 Not Found</title>
-<h1>Not Found</h1>
-<p>The requested URL was not found on the server.  If you entered the URL manually please check your spelling and try again.</p>
-curl: (3) [globbing] nested brace in column 19
+~~~~.Bash
+curl --header "Content-Type: application/json" -H "token-request: I7mHCIWiwTyyct50ENCkIHjGDcLfSQ3CT4HVkAYDtT63Pe9YC2MX3ViyfrxK9AgJcm2A_A==" http://127.00.0.1:8000/rest/0.0.2/asktoken}'
 ~~~~
+
+~~~~.html
+// output
+{
+	"token": {
+		"dateLimit": "2017-10-19_16:36:09",
+		"right": "0",
+		"hash": "gNNeGwYSz-4Upa_mHOVkAvfF9KLZhcJX66weQcupioYOY2hJX7Q84Vwd-ae0_QaQT79kzKPcToaBDdhfWoN2Gw=="
+	},
+	"error": {
+		"code": "1",
+		"description": "request success"
+	}
+}
+~~~~
+
 ---
 ## CREATEACCOUNT
 
-Permet de créer un compte. Retourne un #Da00:Error[code:success] si la création de compte a réussi.
+Permet de créer un compte. Retourne un [**#Da00**:Error](#da00-Error)[**code**:success] si la création de compte a réussi.
 
 commande| data
 ------- | -------------
 {: .uri } **URI** | [root]/rest/[v]/createaccount
-{: .header } **HEADER** | \{**token** : ``#Fb02``[right : >= unauth]}
-{: .post } **POST** | {**loginrequest** : ``#Dc01``:LoginRequest}
-{: .return } **RETURN**  | \{**error**: ``#Da00``:error}  
+{: .header } **HEADER** | \{**token** : [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= unauth]}
+{: .post } **POST** | {**loginrequest** : [#**Dc01**:LoginRequest](#dc01-loginrequest)}
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-Error)}  
 
 ### #SbP01
 * Le service est de structure **[root]/rest/[v]/createaccount**.
-* Le header contient le #Fb02:Token avec des droit supérieur ou égal à unauth.
-* En POST, Le #Dc01:LoginRequest doit être fourni.
+* Le header contient le [**#Fb02**:TokenFormat](#fb02-tokenformat) avec des droit supérieur ou égal à unauth.
+* En POST, Le [#**Dc01**:LoginRequest](#dc01-loginrequest) doit être fourni.
 
 ### #SbD01
-* En cas de succès, Retourne un #Da00:Error[code : #Ea01:success].
-* En cas d’échec, retourne un #Da00:Error relatif à l’erreur.
+* En cas de succès, Retourne un [**#Da00**:Error](#da00-Error)[**code**: [**#Ea01:**](#ea01-status)success].
+* En cas d’échec, retourne un [**#Da00**:Error](#da00-Error) relatif à l’erreur.
 
 ### #SbR01
-* Chaque compte est unique. Créer un doublon est impossible.
-* Retourne code : #Ea01:user_already_exist si le compte existe déjà.
+* **Chaque compte est unique**. Créer un doublon est impossible.
+* Retourne **code**: [**#Ea01:**](#ea01-status)user_already_exist si le compte existe déjà.
 
 ### #SbR02
-* Le compte doit être conforme à #Ra01:RegexEmail ou renvoie un
-``#Da00``:Error[code : invalid_user_email]
-* Le mot de passe doit être conforme à #Ra02: RegexPassword ou renvoie un #Da00:Error[code :invalid_user_password].
+* Le compte doit être conforme à [**#Ra01:**RegexEmail](#ra01-regexemail) ou renvoie un
+[**#Da00**:Error](#da00-Error)[**code**: invalid_user_email]
+* Le mot de passe doit être conforme à [**#Ra02:**RegexPassword](#ra01-regexpassword) ou renvoie un [**#Da00**:Error](#da00-error)[**code**: invalid_user_password].
+
+~~~~.Bash
+curl --header "Content-Type: application/json" -H "token": "htZXjL4dbTXrsUI3WVz3BV4mOh8enaRBnqYuTt0RP9he_klbwGmIZMLgT77YLZT_id-CusOsgGX_Q8ygoo_RLQ==" http://127.00.0.1:8000/rest/0.0.2/createaccount -d '{"loginrequest": {"cryptpassword": "I7mHCIWiwTyyct50ENCkIHjGDcLfSQ3CT4HVkAYDtT63fDFjlrKheap5kaT4tX9yhVl1oDH5n6HqrKXRVXrY57-M1OEdLH_--WqdzWw=", "email": "xxxx.@xx.com"}}'
+~~~~
+
+
+~~~~.html
+{
+	u 'error': {
+		u 'code': u '1',
+		u 'description': u 'request success'
+	}
+}
+~~~~
+
+---
+## DELETEACCOUNT
+
+Permet de supprimer son compte.
+
+commande| data
+------- | -------------
+{: .uri } **URI** | [root]/rest/[v]/deleteAccount
+{: .header } **HEADER** | \{**token:** [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= logged]}
+{: .get } **GET** |
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error)}
+
+### #ScP01
+* Le service est de structure **[root]/rest/[v]/deleteAccount**.
+* Le header contient le [**#Fb02**:TokenFormat](#fb02-tokenformat) avec des droit supérieur ou égal à unauth.
+
+### #ScD01
+* Retourne une data-structure de type [[**#Da00**:Error](#da00-error)].
+* En cas de succès, retourne un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success].
+* En cas d’échec, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur.
+
+---
+## LOGIN
+
+Permet de se connecter à l’API Directories. Renvoie un [**#Da01:**User](#dd01-user) et un nouveau token avec un droit supérieurs ou égal à [**#ED01:**](#ed01-right)logged. En cas de compte/password invalide, renvoie un [**#Da01:**User](#dd01-user) vide.
+
+commande| data
+------- | -------------
+{: .uri } **URI** | [root]/rest/[v]/login
+{: .header } **HEADER** | \{**token** : [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= unauth]}
+{: .post } **POST** | {**loginrequest** : [#**Dc01**:LoginRequest](#dc01-loginrequest)}
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error), user: [**#Dd01**:User](#dd01-user), **token:**[**#Db02**:Token](#db02-token)}  
+
+### #SdP01
+* Le service est de structure **[root]/rest/[v]/login**.
+* En POST, Le [#**Dc01**:LoginRequest](#dc01-loginrequest) doit être fourni.
+* Le header contient le [**#Fb02**:TokenFormat](#fb02-tokenformat) avec des droit supérieur ou égal à unauth.
+
+### #SdD01
+* En cas de succès, retourne un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success], un [**#Dd01**:User](#dd01-user) et un nouveau [**#Db02**:Token](#db02-token) avec des droits supérieur ou égale à [**#ED01:**](#ed01-right)logged.
+* En cas d’échec, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur.
+
+### #SdR01
+* Retourne un [**#Da00**:Error](#da00-error)[**code**: user_already_logged] si l’utilisateur est déjà connecté.
+* Retourne un [**#Da00**:Error](#da00-error)[**code**: user_not_found] si l’utilisateur n’existe pas.
+* Retourne un [**#Da00**:Error](#da00-error)[**code**: user_pass_email_mismatch] si le password ne correspond pas au compte.
+
+---
+## LOGOUT
+
+Permet de se déconnecter de son compte. Nécessite un token dans le header dont les droits sont supérieurs ou égal à [**#ED01:**](#ed01-right)logged. Retourne un nouveau token avec des droits restreints [**#ED01:**](#ed01-right)unauth et invalide l’ancien.
+
+commande| data
+------- | -------------
+{: .uri } **URI** | [root]/rest/[v]/logout
+{: .header } **HEADER** | \{**token**: [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= logged]}
+{: .get } **GET** |
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error), **token:** [**#Db02**:Token](#db02-token)}
+
+### #SeP01
+* Le service est en GET et de structure **[root]/rest/[v]/logout**.
+* Le header contient le [**#Fb02**:TokenFormat](#fb02-tokenformat) avec des droit supérieur ou égal à logged.
+
+### #SeD01
+* En cas de succès, retourne un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success] et un token avec des droit réduits [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= unauth].
+* En cas d’échec, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur.
+
+### #SeR01
+* Une fois déconnecté, l’ancien token devient invalide.
+
+---
+
+## CREATEFILE
+
+Permet de créer un nouveau fichier au type demandé. Retourne le fichier complet. Nécessite un token dont les droits sont supérieurs ou égal à [**#ED01:**](#ed01-right)logged.
+
+commande| data
+------- | -------------
+{: .uri } **URI** | [root]/rest/[v]/createfile
+{: .header } **HEADER** | \{**token**: [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= logged]}
+{: .post } **POST** | {**filetype:** [**#Ia01:**FileType](#ia01-filetype)}
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error), **filePayload:** [**#Ia04**:FilePayload](#ia04-filepayload)}
+
+### #SfP01
+* Le service est de structure **[root]/rest/[v]/createFile**.
+* En POST [**#Ia01:**FileType](#ia01-filetype) avec le type de fichier souhaité.
+* Le header contient le [**#Fb02**:TokenFormat](#fb02-tokenformat) avec des droit supérieur ou égal à logged.
+
+### #SfD01
+* En cas de succées, retourne un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success] et un [**#Ia04**:FilePayload](#ia04-filepayload) avec le type de fichier demandé.
+* En cas d’échec, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur et un [**#Ia04**:FilePayload](#ia04-filepayload) vide.
+
+### #SfR01
+* Si le type de fichier est invalide, renvoie un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)file_unknow_type].
+
+---
+
+## MODIFYFILE
+
+Permet de modifier un fichier. Nécessite un token dont les droits sont supérieurs ou égal à [**#ED01:**](#ed01-right)logged.
+
+commande| data
+------- | -------------
+{: .uri } **URI** | [root]/rest/[v]/modifyFile
+{: .header } **HEADER** | \{**token**: [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= logged]}
+{: .post } **POST** | {**filePayload:** [**#Ia04**:FilePayload](#ia04-filepayload)}
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error), **filePayload:** [**#Ia04**:FilePayload](#ia04-filepayload)}
+
+### #SgP01
+* Le service est de structure **[root]/rest/[v]/modifyFile**.
+* En POST, Le [**#Ia04**:FilePayload](#ia04-filepayload) du fichier que l’on souhaite modifier.
+* Le header contient le [**#Fb02**:TokenFormat](#fb02-tokenformat) avec des droit supérieur ou égal à logged.
+
+### #SgD01
+* En cas de succées, retourne un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success].
+* En cas d’échec, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur.
+
+### #SgR01
+* Renvoie un  [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)not_permitted] si les droits du fichier ne  permettent pas sa modification.
+
+---
+
+## DELETEFILE
+Permet de supprimer un fichier. Nécessite un token dont les droits sont supérieurs ou égal à [**#ED01:**](#ed01-right)logged.
+
+commande| data
+------- | -------------
+{: .uri } **URI** | [root]/rest/[v]/deletefile
+{: .header } **HEADER** | \{**token**: [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= logged]}
+{: .post } **POST** | {**fileid:** [**#Ia02:**FileID](#ia02-fileid)}
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error)}
+
+### #ShP01
+* Le service est de structure **[root]/rest/[v]/deleteFile**.
+* En POST, Le [**#Ia02:**FileID](#ia02-fileid) du fichier que l’on souhaite supprime.  
+* Le header contient le [**#Fb02**:TokenFormat](#fb02-tokenformat) avec des droit supérieur ou égal à logged.
+
+### #ShD01
+* En cas de succées, retourne un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success].
+* En cas d’échec, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur.
+
+### #SRD01
+* Renvoie un  [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)not_permitted] si les droits du fichier ne  permettent pas sa modification.
+
+---
+
+## FILESHEADER
+
+Permet de récupérer une liste de [**#Ia03:**FileHeader](#ia03-fileheader) relatif aux [**#Ia02:**FileID](#ia02-fileid) du POST.
+Nécessite un token dont les droits sont supérieurs ou égal à [**#ED01:**](#ed01-right)unauth.
+
+commande| data
+------- | -------------
+{: .uri } **URI** | [root]/rest/[v]/filesheader
+{: .header } **HEADER** | \{**token**: [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= unauth]}
+{: .post } **POST** | {**filesid:** [[**#Ia02:**FileID](#ia02-fileid)]}
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error),  **filesheader:** [[**#Ia03:**FileHeader](#ia03-fileheader)]}
+
+### #SiP01
+* Le service est de structure **[root]/rest/[v]/filesheader**.
+* En POST, La liste de [[**#Ia02:**FileID](#ia02-fileid)] des fichiers que l’on souhaite obtenir des informations.  
+* Le header contient le [**#Fb02**:TokenFormat](#fb02-tokenformat) avec des droit supérieur ou égal à logged.
+
+### #SiD01
+* En cas de succées, retourne un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success] et la liste des [[**#Ia03:**FileHeader](#ia03-fileheader)] récupérés.
+* En cas d’échec, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur.
+
+---
+
+## FILESPAYLOAD
+
+Permet de récupérer une liste de #Ia03:FilePayload relatif aux [**#Ia02:**FileID](#ia02-fileid) du POST.
+Nécessite un token dont les droits sont supérieurs ou égal à [**#ED01:**](#ed01-right)unauth. Si l’utilisateur n’a pas les droits pour accéder au fichier, retourne une erreur et un payload vide.
+
+commande| data
+------- | -------------
+{: .uri } **URI** | [root]/rest/[v]/filespayload
+{: .header } **HEADER** | \{**token**: [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= logged]}
+{: .post } **POST** | {**filesid:** [[**#Ia02:**FileID](#ia02-fileid)]}
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error),  **filespayload:** [[**#Ia04**:FilePayload](#ia04-filepayload)]}
+
+### #SjP01
+* Le service est de structure **[root]/rest/[v]/filespayload**.
+* En POST, La liste de [[**#Ia02:**FileID](#ia02-fileid)] des fichiers que l’on souhaite obtenir des informations.  
+* Le header contient le [**#Fb02**:TokenFormat](#fb02-tokenformat) avec des droit supérieur ou égal à unauth.
+
+### #SjD01
+* En cas de succées, retourne un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success] et la liste des [[**#Ia04**:FilePayload](#ia04-filepayload)] récupérés.
+* En cas d’échec, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur.
+
+---
+# Datastructures
+---
+
+## #Da00: Error
+&#8203; |key| description | type
+---|-- | ---|---------
+{.row_30_px} **1** | code | Retourne le status de la requète.  | [**#Ea01:**](#ea01-status)Status
+**2** | description | Description de l’erreur | String
+
+
+## #Db02: Token
+&#8203; |key| description | type
+---|-- | ---|---------
+{.row_30_px} **1**  | hash | Une clef unique qui permet d’identifier le client des services.  | String
+**2** | dateLimit | Date jusqu’à laquelle le token est valide. | [**#Fa01:**](#fa01-date)Date
+**3** | right | Le type de permission sur les services. | [**#ED01:**](#ed01-right)Right
+
+
+## #Dc01: LoginRequest
+&#8203; |key| description | type
+---|-- | ---|---------
+{.row_30_px} **1** | email | Une clef unique qui permet d’identifier le client des services.  | String
+**2** | cryptpassword | Password au format #Fb03: EncryPassword. | [**#Fd01:**EncryPassword](#fd01-encrypassword)
+
+## #Dd01: User
+&#8203; |key| description | type
+---|-- | ---|---------
+{.row_30_px} **1** | uid | L’identifiant unique qui permet d’identifier l’utilisateur.  | String
+**2** | email | Email de l’utilisateur. | String
+**3** | name | Nom de l’utilisateur. | String
+**4** | groups | Les id de groupes auquel l’utilisateur appartient. | [[**#la02**: FileID](#ia02-fileid)]
+
+## #De01: Rule
+&#8203; |key| description | type
+---|-- | ---|---------
+{.row_30_px} **1** | owner | L’id de la personne concerné par la règle.  | [**#Dd01**:User](#dd01-user)[id]
+**2** | permission | La permission sur le document. | [**#Ec01**:FilePermission](#ec01-filepermission)
+
+## #Ia01: FileType
+&#8203; |key| description | type
+---|-- | ---|---------
+{.row_30_px} **1** | type | Le type de document.  | [**#Eb01:**FileType](#eb01-filetype)
+**2** | name | Le nom du document. | String
+**3** | parentId | L’id du parent si il existe. | [**#Ia01:**FileType](#ia01-filetype)[id]
+
+## #Ia02: FileID
+&#8203; |key| description | type
+---|-- | ---|---------
+{: .blank_row .row_30_px} | {: .blank_row}| {: .blank_row} ***hérite de [#Ia01: FileType](#ia01-filetype)*** |{: .blank_row}|{: .blank_row}
+**4** | uid | Identifiant unique du document.  | String
+
+## #Ia03: FileHeader
+&#8203; |key| description | type
+---|-- | ---|---------
+{: .blank_row .row_30_px} | {: .blank_row}| {: .blank_row} ***hérite de [#Ia02: FileId](#ia02-fileid)*** |{: .blank_row}|{: .blank_row}
+**5** | owner | La personne qui a crée le document.  | [**#Dd01**:User](#dd01-user)[id]
+**6** | title | Titre du document. | String
+**7** | date | Date de création du document. | [**#Fa01:**](#fa01-date)Date
+**8** | rules | Liste des règles de droits par utilisateurs. | [[**#De01:**Rule](#de01-rule)]
+**9** | childsId | Liste de files que le fileHeader contient. Peut être nul | [[**#Ia01:**FileType](#ia01-filetype)[id]]
+
+## #Ia04: FilePayload
+&#8203; |key| description | type
+---|-- | ---|---------
+{: .blank_row .row_30_px} | {: .blank_row}| {: .blank_row} ***hérite de [#Ia03: FileHeader](#ia03-fileheader)*** |{: .blank_row}|{: .blank_row}
+**10** | payload | Le contenu du document.  | String
+
+---
+# Enum
+---
+
+### #Ea01: Status
+
+&#8203; |name
+---|--
+{.row_30_px} **0** | unknow
+**1** | none
+**2** | success
+**3** | invalid_apikey
+**4** | invalid_token
+{: .blank_row}  |  {: .blank_row} **format regex**
+**10** | invalid_user_email
+**11** | invalid_user_password
+**12** | invalid_token
+{: .blank_row} |  {: .blank_row} **Post Status**
+**20** | not_permitted
+**21** | token_header_missing
+**22** | token_request_header_missing
+**23** | invalid_json
+{: .blank_row} |  {: .blank_row} **Loggin Status**
+**30** | user_already_exist
+**31** | user_not_found
+**32** | user_already_logged
+**33** | user_pass_email_mismatch
+{: .blank_row} |  {: .blank_row} **File Status**
+**50** | file_unknow_type
+
+## #Eb01: FileType
+&#8203; |name
+---|--
+{.row_30_px} **0** | unknow
+**1** | group
+**2** | folder
+**3** | markdown
+**4** | other
+
+## #Ec01: FilePermission
+&#8203; |name
+---|--
+{.row_30_px} **0**  | forbidden
+**1** | read
+**2** | modify
+
+## #ED01: Right
+&#8203; |name
+---|--
+{.row_30_px} **0** | none
+**1** | unauth
+**2** | logged
+**3** | superUser
+
+---
+# Format
+---
+
+## #Fa01 Date
+&#8203; |format
+---|--
+format | MM-DD-YYYY_Thh:mmTZD
+exemple | 2017-10-07_11:44:11
+
+## #Fb01: TokenRequest
+&#8203; |format
+---|--
+format | AES(secretAPIKey\|[**#Fa01:**](#fa01-date)CurrentDate)
+exemple | AES(fdskhdfsizzfbhzc\|2017-10-07_11:44:11)
+
+## #Fc01: TokenFormat
+&#8203; |format
+---|--
+format | AES(generatedAccessKey\|[**#ED01:**](#ed01-right)Right\|[**#Fa01:**](#fa01-date)DateLimite)
+exemple | fdskhdfsizzsgsqfbhzc\|1\|2017-10-09_11:44:11
+
+## #Fd01: EncryPassword
+&#8203; |format
+---|--
+format | AES(secretAPIKey|password)
+exemple | AES(fdskhdfsizzsgsqfbhzc|mot-de-passe)
+
+## #Ra01: RegexEmail
+&#8203; |format
+---|--
+format | xxx@xx.x
+exemple | moncompte@mail.com
+
+## #Ra01: RegexPassword
+&#8203; |format
+---|--
+format | 8 caractères min, 1 majuscule, 1 signe spécial, 1 chiffre
+exemple | mot2Pass&

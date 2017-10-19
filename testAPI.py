@@ -76,6 +76,7 @@ def performtest():
     r       = requests.get(url + "asktoken", headers=headers_requestToken)
     data    = json.loads(r.content)
     token   = data["token"]["hash"]
+
     print "[#SaP01] url: ", r.status_code, "== 200", r.status_code == 200
 
     e = iterate_through_graph(data, {"error" : {"code" : "", "description" : ""}, "token" : {"hash" : "", "right" : "", "dateLimit" : ""}})
@@ -114,6 +115,7 @@ def performtest():
     r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
     data                = json.loads(r.content)
 
+    print data
     print "[#SbPO1] url", r.status_code == 200
     e = iterate_through_graph(data, {"error" : {"code" : "", "description" : ""}})
 
