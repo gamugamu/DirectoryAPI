@@ -1,7 +1,13 @@
 # coding: utf8
 import redis
+import os
 
-r = redis.StrictRedis(host='localhost', port=6379, db=0)
+if "REDISCLOUD_URL" in os.environ:
+    print "REDISCLOUD_URL found ", os.environ['REDISCLOUD_URL']
+    r = redis.from_url(os.environ['REDISCLOUD_URL'])
+else:
+    print "LOCALHOST"
+    r  = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 def volatil_store(typeKey, key, storeDict, time):
     key = typeKey + "_" + key
