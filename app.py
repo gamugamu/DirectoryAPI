@@ -59,7 +59,6 @@ def home():
 
 @app.route(version_uri + 'testmarkdown')
 def test_markdown():
-    print "test_markdown"
     content = file('testmarkdown.md')
     content = Environment().from_string(content).render().decode('utf-8')
     content = Markup(markdown.markdown(content, extensions=['markdown.extensions.extra', 'markdown.extensions.toc', 'superscript', 'markdown.extensions.nl2br', 'markdown.extensions.fenced_code', 'markdown.extensions.codehilite', 'pymdownx.emoji']))
