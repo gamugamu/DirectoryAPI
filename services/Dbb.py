@@ -2,9 +2,9 @@
 import redis
 import os
 
-if "REDISCLOUD_URL" in os.environ:
-    print "REDISCLOUD_URL found ", os.environ['REDISCLOUD_URL']
-    r = redis.from_url(os.environ['REDISCLOUD_URL'])
+if "REDIS_URL" in os.environ:
+    print "REDIS_URL found ", os.environ['REDIS_URL']
+    r = redis.from_url(os.environ['REDIS_URL'])
 else:
     print "LOCALHOST"
     r  = redis.StrictRedis(host='localhost', port=6379, db=0)
