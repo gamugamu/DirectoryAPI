@@ -14,6 +14,7 @@ from settings import file
 
 from services import Security
 from services import Login
+from services.Mail import sendmail
 from cloud import CloudService
 from helper import Sanityzer
 from jinja2 import Environment
