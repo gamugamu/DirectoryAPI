@@ -155,6 +155,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "[#SdR01] login OK", int(data["error"]["code"]) == 1 # success
     token_session = data["token"]["hash"]
 
+    """
     print "\n==========" + url + "logout ==========="
     print  color.BOLD + color.PURPLE + "[#SeP01] [#SeD01] [#SeR01]" + color.END
     headers_token    = {'content-type': 'application/json', 'token' : token_session}
@@ -172,11 +173,11 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "\n==========" + url + "re-login attempt ==========="
     crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
-    token_session = json.loads(r.content)["token"]["hash"]
-    headers_token    = {'content-type': 'application/json', 'token' : token_session}
+    token_session       = json.loads(r.content)["token"]["hash"]
+    headers_token       = {'content-type': 'application/json', 'token' : token_session}
     data    = json.loads(r.content)
     print "[#SdR01] re-login", int(data["error"]["code"]) == 1 # success
-
+    """
 
     print "\n==========" + url + "create FILE " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
