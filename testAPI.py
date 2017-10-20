@@ -154,7 +154,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data    = json.loads(r.content)
     print "[#SdR01] login OK", int(data["error"]["code"]) == 1 # success
     token_session = data["token"]["hash"]
-
+    print token_session
     """
     print "\n==========" + url + "logout ==========="
     print  color.BOLD + color.PURPLE + "[#SeP01] [#SeD01] [#SeR01]" + color.END
@@ -179,7 +179,9 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "[#SdR01] re-login", int(data["error"]["code"]) == 1 # success
     """
 
-    print "\n==========" + url + "create FILE " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    headers_token       = {'content-type': 'application/json', 'token' : token_session}
+
+    print "\n==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
 
     data = {"filetype" : {"type" : 1, "name" : "yellow5", "parentId" : ""}}
@@ -193,6 +195,8 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data = {"filetype" : {"type" : 6, "name" : "yellow5", "parentId" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
+    print r.content + "\n"
+
     print "[#SfR01] datastructure ", e.value == Error.SUCCESS.value
     print "[#SfR01] error wrong type ", int(data["error"]["code"]) == 50 #wrong type code
 
@@ -203,7 +207,17 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data = json.loads(r.content)
     file1       = data
     file1_id    = data["filepayload"]["uid"]
+    print r.content + "\n"
 
+    print "\n==========" + url + "create File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    data = {"filetype" : {"type" : 3, "name" : "fdsfgg", "parentId" : group_id}}
+    r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+    data = json.loads(r.content)
+    file1       = data
+    file1_id    = data["filepayload"]["uid"]
+    print r.content + "\n"
+
+    """
     print "\n==========" + url + "modify File ==========="
     print  color.BOLD + color.PURPLE + "[#SgP01] [#SgD01] [#SgR01]" + color.END
 
@@ -214,7 +228,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
 
     print "[#SgD01] datastructure ", e.value == Error.SUCCESS.value
     print "[#SgR01] right (not tested)", False
-
+    """
 
     print "\n============= TEST GRAPH  ==============="
     print "========================================="

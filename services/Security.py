@@ -172,15 +172,9 @@ def generate_blank_token():
 
 # >= .UNAUTH
 def user_id_from_request(request):
-    print "user_id_from_request*****"
     crypt_token     = token_from_header(request)
-    print "crypt_token ", crypt_token
-
     decrypt_token   = decrypt_with_security_level(crypt_token, SecurityLevel.LOGGED)
-    print "decrypt_token ", decrypt_token
-
     data_token      = decrypt_token.split("|")
-    print "data_token ", data_token
 
     return data_token[2] #account
 
