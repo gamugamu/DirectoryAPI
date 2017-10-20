@@ -64,8 +64,9 @@ def decrypt(cipher):
     obj2 = AES.new(AKEY, AES.MODE_CFB, iv)
     return obj2.decrypt(base64.urlsafe_b64decode(cipher))
 
-def performtest(urlRoot=urlRoot, version_API=version_API):
-    
+def performtest(urlRoot=urlRoot, version_API=urlRoot):
+    print "WILL performtest ", urlRoot, urlRoot
+
     url = urlRoot + "/rest/" + version_API + "/"
     apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     headers_requestToken    = {'content-type': 'application/json', 'token-request' : apirequestkey}
