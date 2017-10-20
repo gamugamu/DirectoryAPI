@@ -110,7 +110,8 @@ def check_if_token_allow_access(request, securityLvl):
             token_key       = request.headers.get(TOKEN_HEADER)
             decrypted_token = Token.decrypt_secret_description(str(token_key))
             ip_request      = request.environ['REMOTE_ADDR']
-
+            print "ip_request ", ip_request, "  - ", decrypted_token
+            print "ENVIRON ", request.environ
             if ip_request in decrypted_token:
                 # l'ip du token correspond au clien de la requete.
                 # Est-t'il repertoirié?
