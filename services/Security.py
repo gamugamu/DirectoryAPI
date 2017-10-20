@@ -122,12 +122,12 @@ def check_if_token_allow_access(request, securityLvl):
                 if token == None:
                     # ne devrait pas arriver. Sauf si une personne est capable de générer de faux
                     # ticket.
-                    return Error.INVALID_TOKEN
+                    return Error.INVALID_TOKEN_BLANK
                 else:
                     return Error.SUCCESS
             else:
                 # l'ip de la requete de correspond pas à celle du token.
-                return Error.INVALID_TOKEN
+                return Error.INVALID_TOKEN_IP
         else:
             return Error.TOKEN_HEADER_MISSING
     # n'arrive jamais

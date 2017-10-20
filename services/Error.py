@@ -7,6 +7,8 @@ class Error(Enum):
     SUCCESS                     = "1"
     INVALID_APIKEY              = "2"
     INVALID_TOKEN               = "3"
+    INVALID_TOKEN_BLANK         = "4"
+    INVALID_TOKEN_IP            = "5"
     INVALID_USER_EMAIL          = "10"
     INVALID_USER_PASSWORD       = "11"
     INVALID_TOKEN_LOGGED        = "12"
@@ -34,6 +36,8 @@ class Error(Enum):
             "1" : "request success",
             "2" : "wrong API key",
             "3" : "invalid token",
+            "4" : "token is empty",
+            "5" : "token seems to taken be from another source.",
             "10" : "invalid email format",
             "11" : "invalid password format",
             "12" : "invalid token (logged)",
