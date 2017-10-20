@@ -131,7 +131,7 @@ def check_if_token_allow_access(request, securityLvl):
         else:
             return Error.TOKEN_HEADER_MISSING
     # n'arrive jamais
-    return Error.none
+    return Error.UNKNOW
 
 def generateToken(isValid, securityLvl, from_request):
     token = Token()

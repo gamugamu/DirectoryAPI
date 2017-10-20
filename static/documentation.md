@@ -152,7 +152,7 @@ commande| data
 {: .uri } **URI** | [root]/rest/[v]/login
 {: .header } **HEADER** | \{**token** : [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= unauth]}
 {: .post } **POST** | {**loginrequest** : [#**Dc01**:LoginRequest](#dc01-loginrequest)}
-{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error), user: [**#Dd01**:User](#dd01-user), **token:**[**#Db02**:Token](#db02-token)}  
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error), **user**: [**#Dd01**:User](#dd01-user), **token:**[**#Db02**:Token](#db02-token)}  
 
 ### #SdP01
 * Le service est en GET **[root]/rest/[v]/login**.
@@ -388,10 +388,9 @@ commande| data
 &#8203; |name
 ---|--
 {.row_30_px} **0** | unknow
-**1** | none
-**2** | success
-**3** | invalid_apikey
-**4** | invalid_token
+**1** | success
+**2** | invalid_apikey
+**3** | invalid_token
 {: .blank_row}  |  {: .blank_row} **format regex**
 **10** | invalid_user_email
 **11** | invalid_user_password

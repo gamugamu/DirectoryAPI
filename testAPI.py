@@ -50,6 +50,12 @@ urlRoot     = "http://127.00.0.1:8000"
 version_API = "0.0.2"
 url         = urlRoot + "/rest/" + version_API + "/"
 
+# graph
+g_e = {"error" : {"code" : "", "description" : ""}};
+g_u = {"user" : {"uid" : "", "email" : "", "name" : "", "group" : ""}};
+g_t = {"token" : {"hash" : "", "dateLimit" : "", "right" : ""}};
+g_p = {"filepayload" : {"type" : "", "name" : "", "parentId" : "", "uid" :"", "owner" : "",
+"title" : "", "date" : "", "rules": "", "childsId": ""}};
 
 def encrypt(message):
     obj = AES.new(AKEY, AES.MODE_CFB, iv)
@@ -115,9 +121,8 @@ def performtest():
     r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
     data                = json.loads(r.content)
 
-    print data
     print "[#SbPO1] url", r.status_code == 200
-    e = iterate_through_graph(data, {"error" : {"code" : "", "description" : ""}})
+    e = iterate_through_graph(data, g_e)
 
     print "[#SbDO1] datastructure", e.value == Error.SUCCESS.value
     r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
@@ -125,71 +130,93 @@ def performtest():
     print "[#SbRO1] compte already exist", int(data["error"]["code"]) == 30 #user_already_exist
 
 
-    """
-    print "==========" + url + "login " + color.BOLD + color.CYAN + "(must fail password format)" + color.END + "==========="
-    crypted_password    = encrypt(AKEY + "|" + "fdklfdp" + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
-    r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
-    print r.content + "\n"
+    print "\n==========" + url + "login ==========="
+    print  color.BOLD + color.PURPLE + "[#SdP01] [#SdD01] [#SdR01]" + color.END
 
-    print "==========" + url + "login " + color.BOLD + color.CYAN + "(must fail wrong password)" + color.END + "==========="
     crypted_password    = encrypt(AKEY + "|" + "superpassE2" + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
-    print r.content + "\n"
+    print "[#SdP01] uri ", r.status_code, "== 200", r.status_code == 200
+    data    = json.loads(r.content)
+    e       = iterate_through_graph(data, dict(dict(g_e, **g_u), **g_t))
 
-    print "==========" + url + "login " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    print "[#SdD01] datastructure ", e.value == Error.SUCCESS.value
+    print "[#SdR01] wrong-password ", int(data["error"]["code"]) == 33 # wring password code
+
+    false_account = "chewi@gmail.ocm"
+    crypted_password    = encrypt(AKEY + "|" + password + "|" + false_account + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+    r       = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : false_account , "cryptpassword" : crypted_password}}))
+    data    = json.loads(r.content)
+    print "[#SdR01] user not found ", int(data["error"]["code"]) == 31 # user not found
+
     crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
-    r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
-    print r.content + "\n"
+    r       = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
+    data    = json.loads(r.content)
+    print "[#SdR01] login OK", int(data["error"]["code"]) == 1 # success
+    token_session = data["token"]["hash"]
 
-    token_session = json.loads(r.content)["token"]["hash"]
-    print "==========" + url + "logout " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+
+    print "\n==========" + url + "logout ==========="
+    print  color.BOLD + color.PURPLE + "[#SeP01] [#SeD01] [#SeR01]" + color.END
     headers_token    = {'content-type': 'application/json', 'token' : token_session}
     r = requests.get(url + "logout", headers=headers_token)
-    print r.content + "\n"
 
-    print "==========" + url + "logout " + color.BOLD + color.CYAN + "(must fail)" + color.END + "==========="
+    print "[#SeP01] uri ", r.status_code, "== 200", r.status_code == 200
+    e = iterate_through_graph(data, dict(g_e, **g_t))
+
+    print "[#SeD01] datastructure", e.value == Error.SUCCESS.value
+    headers_token    = {'content-type': 'application/json', 'token' : token_session}
     r = requests.get(url + "logout", headers=headers_token)
-    print r.content + "\n"
+    data    = json.loads(r.content)
+    print "[#SeR01] re-logout", int(data["error"]["code"]) == 3 # false token
 
-    print "==========" + url + "login" + color.BOLD + color.PURPLE + " (must succeed relogin)"+ color.END + "==========="
+    print "\n==========" + url + "re-login attempt ==========="
     crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
-    print r.content + "\n"
     token_session = json.loads(r.content)["token"]["hash"]
     headers_token    = {'content-type': 'application/json', 'token' : token_session}
+    data    = json.loads(r.content)
+    print "[#SdR01] re-login", int(data["error"]["code"]) == 1 # success
 
-    print "==========" + url + "login " + color.BOLD + color.CYAN + "(must fail already logged)" + color.END + "==========="
-    r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
-    print r.content + "\n"
 
-    print "==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    print "\n==========" + url + "create FILE " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
+
     data = {"filetype" : {"type" : 1, "name" : "yellow5", "parentId" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
-    print r.content + "\n"
     data = json.loads(r.content)
     group_id = data["filepayload"]["uid"]
+    print "[#SfP01] uri ", r.status_code, "== 200", r.status_code == 200
+    e       = iterate_through_graph(data, dict(g_e, **g_p))
+
+    print "[#SfD01] datastructure ", e.value == Error.SUCCESS.value
+    data = {"filetype" : {"type" : 6, "name" : "yellow5", "parentId" : ""}}
+    r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+    data = json.loads(r.content)
+    print "[#SfR01] datastructure ", e.value == Error.SUCCESS.value
+    print "[#SfR01] error wrong type ", int(data["error"]["code"]) == 50 #wrong type code
 
 
-    print "==========" + url + "create File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    print "\n==========" + url + "create File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     data = {"filetype" : {"type" : 3, "name" : "subYellow", "parentId" : group_id}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
-    print r.content + "\n"
     data = json.loads(r.content)
     file1       = data
     file1_id    = data["filepayload"]["uid"]
 
-    print "==========" + url + "modify File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    print "\n==========" + url + "modify File ==========="
+    print  color.BOLD + color.PURPLE + "[#SgP01] [#SgD01] [#SgR01]" + color.END
 
     file1["filepayload"]["payload"] = "This is a content from yellow"
     r = requests.post(url + "modifyfile", headers=headers_token, data=json.dumps(file1))
-    print r.content + "\n"
+    print "[#SgP01] uri ", r.status_code, "== 200", r.status_code == 200
+    e       = iterate_through_graph(data, dict(g_e, **g_p))
+
+    print "[#SgD01] datastructure ", e.value == Error.SUCCESS.value
+    print "[#SgR01] right (not tested)", False
 
 
-    print "==========" + url + "get payload " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"fileids" : [file1_id]}
-    r = requests.post(url + "filespayload", headers=headers_token, data=json.dumps(data))
-    print r.content + "\n"
-    data = json.loads(r.content)
+    print "\n============= TEST GRAPH  ==============="
+    print "========================================="
 
     print "==========" + url + "create File in Group (2)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     data = {"filetype" : {"type" : 3, "name" : "subGreen", "parentId" : group_id}}
@@ -278,16 +305,7 @@ def performtest():
     crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
     print r.content + "\n"
-    """
-    #data=json.dumps(payload),
 
-    #r = requests.get(urlRoot)
-
-    # #Ia01, #Ia02
-    #print "[#Ia01, #Ia02] status code == 200", r.status_code, r.status_code == 200
-
-    # #Ia03
-    #print "[#Ia03] version == ", r.headers["version"], version == r.headers["version"]
     sys.stdout = old_stdout
     result_string = result.getvalue()
 

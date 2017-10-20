@@ -64,7 +64,7 @@ def login(from_error, request):
             return (Error.SUCCESS, user, session_token)
         else:
             # Le mot-de-passe n'est pas celui du compte.
-            return (Error.WRONG_USER_PASSWORD, User(), Security.generate_blank_token())
+            return (Error.USER_PASSW_MISTMATCH, User(), Security.generate_blank_token())
     else:
         # le token ne doit pas être bon
         return (error, User(), Security.generate_blank_token())

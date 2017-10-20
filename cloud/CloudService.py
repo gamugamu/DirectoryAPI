@@ -38,7 +38,8 @@ class CloudService:
 
                 if file_type == int(FileType.GROUP):
                     return self.create_new_bucket(file_name, owner_id)
-                else: # file or folder
+
+                elif file_type in (FileType.FILE, FileType.FOLDER): # file or folder
                     error, bucket, uri_path = self.retrieve_bucket_data_from_graph(parent_id)
 
                     if error == Error.SUCCESS:
@@ -49,6 +50,9 @@ class CloudService:
                     else:
                         # graph error
                         return error, FilePayload()
+                else:
+                    # type error
+                    return Error.FILE_UNKNOW_TYPE, FilePayload()
             else:
                 # json validation error
                 return error, FilePayload()
