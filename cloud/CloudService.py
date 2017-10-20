@@ -281,6 +281,7 @@ class CloudService:
 
     def add_user_ownership(self, user_id, group_id):
         user            = Dbb.collection_for_Key(typeKey=Type.USER.name, key=user_id)
+        print "user++ ", user, user_id
         user["group"]   = Dbb.appendedValue(user["group"], group_id)
 
         Dbb.store_collection(Type.USER.name, user_id, user)

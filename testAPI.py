@@ -17,15 +17,7 @@ from Crypto import Random
 from Crypto.Cipher import AES
 import requests
 
-# Store the reference, in case you want to show things again in standard output
 
-old_stdout = sys.stdout
-
-# This variable will store everything that is sent to the standard output
-
-result = StringIO()
-
-sys.stdout = result
 
 class color:
    PURPLE       = '\033[95m'
@@ -65,8 +57,13 @@ def decrypt(cipher):
     return obj2.decrypt(base64.urlsafe_b64decode(cipher))
 
 def performtest(urlRoot=urlRoot, version_API=urlRoot):
-    print "WILL performtest ", urlRoot, urlRoot
-    print "test 9"
+    # Store the reference, in case you want to show things again in standard output
+    old_stdout = sys.stdout
+
+    # This variable will store everything that is sent to the standard output
+    result = StringIO()
+
+    sys.stdout = result
 
     url = urlRoot + "rest/" + version_API + "/"
     apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
@@ -159,7 +156,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print data
     headers_token       = {'content-type': 'application/json', 'token' : token_session}
 
-    """
     print "\n==========" + url + "logout ==========="
     print  color.BOLD + color.PURPLE + "[#SeP01] [#SeD01] [#SeR01]" + color.END
     headers_token    = {'content-type': 'application/json', 'token' : token_session}
@@ -181,7 +177,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     headers_token       = {'content-type': 'application/json', 'token' : token_session}
     data    = json.loads(r.content)
     print "[#SdR01] re-login", int(data["error"]["code"]) == 1 # success
-    """
 
 
     print "\n==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
@@ -220,7 +215,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     file1_id    = data["filepayload"]["uid"]
     print r.content + "\n"
 
-    """
     print "\n==========" + url + "modify File ==========="
     print  color.BOLD + color.PURPLE + "[#SgP01] [#SgD01] [#SgR01]" + color.END
 
@@ -231,7 +225,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
 
     print "[#SgD01] datastructure ", e.value == Error.SUCCESS.value
     print "[#SgR01] right (not tested)", False
-    """
 
     print "\n============= TEST GRAPH  ==============="
     print "========================================="

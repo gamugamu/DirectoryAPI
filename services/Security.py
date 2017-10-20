@@ -108,13 +108,12 @@ def check_if_token_allow_access(request, securityLvl):
         ## securityLvl <= SecurityLevel.UNAUTH:
         if TOKEN_HEADER in request.headers:
             token_key       = request.headers.get(TOKEN_HEADER)
-            decrypted_token = Token.decrypt_secret_description(str(token_key))
-            ip_request      = request.environ['REMOTE_ADDR']
-            print "ip_request ", ip_request, "  - ", decrypted_token
-            print "ENVIRON ", request.environ
-            if ip_request in decrypted_token:
-                # l'ip du token correspond au clien de la requete.
-                # Est-t'il repertoirié?
+
+            if token_key == None:
+                return Error.INVALID_TOKEN_BLANK
+            else:
+                decrypted_token = Token.decrypt_secret_description(str(token_key))
+
                 token_data  = decrypted_token.split("|")
                 right       = token_data[2]
                 type_key    = Type.TOKEN.name if right <= SecurityLevel.UNAUTH.value else Type.SESSION.name
@@ -123,12 +122,10 @@ def check_if_token_allow_access(request, securityLvl):
                 if token == None:
                     # ne devrait pas arriver. Sauf si une personne est capable de générer de faux
                     # ticket.
-                    return Error.INVALID_TOKEN_BLANK
+                    return Error.INVALID_TOKEN
                 else:
                     return Error.SUCCESS
-            else:
-                # l'ip de la requete de correspond pas à celle du token.
-                return Error.INVALID_TOKEN_IP
+
         else:
             return Error.TOKEN_HEADER_MISSING
     # n'arrive jamais
@@ -138,7 +135,7 @@ def generateToken(isValid, securityLvl, from_request):
     token = Token()
 
     if isValid == True:
-        token.secret_uuid   = uuid.uuid4().hex + "|" + from_request.environ["REMOTE_ADDR"]
+        token.secret_uuid   = uuid.uuid4().hex
         token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
         token.right         = securityLvl.value
 
@@ -152,7 +149,8 @@ def generateToken(isValid, securityLvl, from_request):
 
 def generate_Session_token(secret_keys, from_request):
     token = Token()
-    token.secret_uuid   = uuid.uuid4().hex + "|" + from_request.environ["REMOTE_ADDR"] + "|" + secret_keys[3] # account
+    print "secret_keys", secret_keys
+    token.secret_uuid   = uuid.uuid4().hex + "|" + secret_keys[3] # account
     token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
     token.right         = SecurityLevel.LOGGED.value
 
@@ -177,7 +175,7 @@ def user_id_from_request(request):
     decrypt_token   = decrypt_with_security_level(crypt_token, SecurityLevel.LOGGED)
     data_token      = decrypt_token.split("|")
 
-    return data_token[2] #account
+    return data_token[1] #account
 
 def token_from_header(request):
     return request.headers[TOKEN_HEADER]
