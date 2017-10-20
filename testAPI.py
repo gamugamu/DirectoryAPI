@@ -178,7 +178,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     headers_token    = {'content-type': 'application/json', 'token' : token_session}
     data    = json.loads(r.content)
     print "[#SdR01] re-login", int(data["error"]["code"]) == 1 # success
-
+    print data
 
     print "\n==========" + url + "create FILE " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
