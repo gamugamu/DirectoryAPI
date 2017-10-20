@@ -1,7 +1,5 @@
 [TOC]
 
-Take me to [**#sPa01**](#sap01)
-
 ## Description:
 _Directories simule la structure d’un répertoire de fichiers. Permet de créer / supprimer des documents markdown avec une restriction de droits et gestion de groupe._
 
@@ -58,7 +56,7 @@ commande| data
 <br>
 ###### Exemple:
 ~~~~.Bash
-curl --header "Content-Type: application/json" -H "token-request: I7mHCIWiwTyyct50ENCkIHjGDcLfSQ3CT4HVkAYDtT63Pe9YC2MX3ViyfrxK9AgJcm2A_A==" http://127.00.0.1:8000/rest/0.0.2/asktoken}'
+curl http://127.00.0.1:8000/rest/0.0.2/asktoken --header "Content-Type: application/json" -H "token-request: I7mHCIWiwTyyct50ENCkIHjGDcLfSQ3CT4HVkAYDtT63Pe9YC2MX3ViyfrxK9AgJcm2A_A==" }
 ~~~~
 
 ~~~~.html
