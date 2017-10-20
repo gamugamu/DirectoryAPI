@@ -182,7 +182,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
 
     print "\n==========" + url + "create FILE " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
-"""
+    """
     data = {"filetype" : {"type" : 1, "name" : "yellow5", "parentId" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
@@ -307,7 +307,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
     print r.content + "\n"
-"""
+    """
     sys.stdout = old_stdout
     result_string = result.getvalue()
 
