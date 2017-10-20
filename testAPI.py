@@ -66,6 +66,7 @@ def decrypt(cipher):
 
 def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "WILL performtest ", urlRoot, urlRoot
+    print "test 9"
 
     url = urlRoot + "rest/" + version_API + "/"
     apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
@@ -155,6 +156,9 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "[#SdR01] login OK", int(data["error"]["code"]) == 1 # success
     token_session = data["token"]["hash"]
     print token_session
+    print data
+    headers_token       = {'content-type': 'application/json', 'token' : token_session}
+
     """
     print "\n==========" + url + "logout ==========="
     print  color.BOLD + color.PURPLE + "[#SeP01] [#SeD01] [#SeR01]" + color.END
@@ -179,7 +183,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "[#SdR01] re-login", int(data["error"]["code"]) == 1 # success
     """
 
-    headers_token       = {'content-type': 'application/json', 'token' : token_session}
 
     print "\n==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
