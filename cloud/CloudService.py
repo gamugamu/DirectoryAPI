@@ -77,7 +77,7 @@ class CloudService:
                     self.remove_file_from_parent(file_id)
                     return Error.SUCCESS
         else:
-            return error
+            return from_error
 
     def modify_file(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
@@ -103,7 +103,7 @@ class CloudService:
                 return error
         else:
             # exrternal error
-            return error
+            return from_error
 
     def get_files_header(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
@@ -123,7 +123,7 @@ class CloudService:
             else:
                 return Error.SUCCESS, list_uid
         else:
-            return error, FileHeader().__dict__
+            return from_error, FileHeader().__dict__
 
     def get_files_payload(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:

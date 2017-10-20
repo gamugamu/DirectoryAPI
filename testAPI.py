@@ -86,7 +86,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     token   = data["token"]["hash"]
 
     print "[#SaP01] url: ", r.status_code, "== 200", r.status_code == 200
-    print data
 
     e = iterate_through_graph(data, {"error" : {"code" : "", "description" : ""}, "token" : {"hash" : "", "right" : "", "dateLimit" : ""}})
     print "[#SaD01] datastructure: ", e.value == Error.SUCCESS.value, e
@@ -96,7 +95,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     e       = iterate_through_graph(data, {"error" : {"code" : "", "description" : ""}, "token" : {"hash" : "", "right" : "", "dateLimit" : ""}})
     print "[#SaD01] with bad apiKey", int(data["error"]["code"]) == 2 # code invalid_apikey
     print "[#SaD01] get blank datastructure", e.value == Error.SUCCESS.value
-    print data
 
 
     headers_token    = {'content-type': 'application/json', 'token' : token}
@@ -111,7 +109,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data    = json.loads(r.content)
 
     print "[#SbR02] bad email ", int(data["error"]["code"]) == 10 # invalid_user_email
-    print data
 
     email               = str(uuid.uuid4())[0:6] + "@fddfs.com"
     password            = "superp___0"
@@ -119,14 +116,12 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     r                   = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
     data                = json.loads(r.content)
     print "[#SbR02] bad password ", int(data["error"]["code"]) == 11 #invalid_user_password
-    print data
 
     email               = str(uuid.uuid4())[0:6] + "@gmail.com"
     password            = "superpassE0"
     crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
     data                = json.loads(r.content)
-    print data
 
     print "[#SbPO1] url", r.status_code == 200
     e = iterate_through_graph(data, g_e)
@@ -135,8 +130,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
     data                = json.loads(r.content)
     print "[#SbRO1] compte already exist", int(data["error"]["code"]) == 30 #user_already_exist
-    print data
-
 
     print "\n==========" + url + "login ==========="
     print  color.BOLD + color.PURPLE + "[#SdP01] [#SdD01] [#SdR01]" + color.END
@@ -149,7 +142,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
 
     print "[#SdD01] datastructure ", e.value == Error.SUCCESS.value
     print "[#SdR01] wrong-password ", int(data["error"]["code"]) == 33 # wring password code
-    print data
 
     false_account = "chewi@gmail.ocm"
     crypted_password    = encrypt(AKEY + "|" + password + "|" + false_account + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
@@ -162,8 +154,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data    = json.loads(r.content)
     print "[#SdR01] login OK", int(data["error"]["code"]) == 1 # success
     token_session = data["token"]["hash"]
-    print data
-
 
     print "\n==========" + url + "logout ==========="
     print  color.BOLD + color.PURPLE + "[#SeP01] [#SeD01] [#SeR01]" + color.END
@@ -178,7 +168,6 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     r = requests.get(url + "logout", headers=headers_token)
     data    = json.loads(r.content)
     print "[#SeR01] re-logout", int(data["error"]["code"]) == 3 # false token
-    print data
 
     print "\n==========" + url + "re-login attempt ==========="
     crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
@@ -187,11 +176,11 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     headers_token    = {'content-type': 'application/json', 'token' : token_session}
     data    = json.loads(r.content)
     print "[#SdR01] re-login", int(data["error"]["code"]) == 1 # success
-    print data
-    print url + "login"
+
+
     print "\n==========" + url + "create FILE " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
-    """
+
     data = {"filetype" : {"type" : 1, "name" : "yellow5", "parentId" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
@@ -316,7 +305,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
     print r.content + "\n"
-    """
+
     sys.stdout = old_stdout
     result_string = result.getvalue()
 
