@@ -130,17 +130,20 @@ class CloudService:
             error, data = validate_json(request, {"fileids": []});
             list_uid = [];
 
-            for uid in data["fileids"]:
-                value = Dbb.collection_for_Pattern("*" + uid)
+            if error == Error.SUCCESS:
+                for uid in data["fileids"]:
+                    value = Dbb.collection_for_Pattern("*" + uid)
 
-                if value is not None:
-                    value = unbunchify(FileHeader.dictionnary_to_fileHeader(value))
-                    list_uid.append(value)
+                    if value is not None:
+                        value = unbunchify(FileHeader.dictionnary_to_fileHeader(value))
+                        list_uid.append(value)
 
-            if len(list_uid) == 0:
-                return Error.REDIS_KEY_UNKNOWN, FilePayload().__dict__
+                if len(list_uid) == 0:
+                    return Error.REDIS_KEY_UNKNOWN, FilePayload().__dict__
+                else:
+                    return Error.SUCCESS, list_uid
             else:
-                return Error.SUCCESS, list_uid
+                return error, FilePayload().__dict__
         else:
             return error, FilePayload().__dict__
 
@@ -306,3 +309,21 @@ class CloudService:
 
     def append_as_folder(self, path):
         return path + "/.bzEmpty"
+
+################# GRAPH ######################
+    def graph(self, from_error, request, owner_id):
+        print "graph GRAPH"
+        if from_error == Error.SUCCESS:
+            error, data = validate_json(request, {"file_id": ""})
+            print "++++++++++++"
+            if error == Error.SUCCESS:
+                print "xxxxxxxxxxxxx"
+
+                print self.retrieve_bucket_data_from_graph(data["file_id"])
+
+            else:
+                return error
+        else:
+            return from_error
+
+        return from_error, "graph"

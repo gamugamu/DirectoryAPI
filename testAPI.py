@@ -302,6 +302,11 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     folder3_id = data["filepayload"]["uid"]
 
 
+    print "==========" + url + "GRAPH" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    data = {"file_id" : folder3_id}
+    r = requests.post(url + "graph", headers=headers_token, data=json.dumps(data))
+    print r.content + "\n"
+
     print "==========" + url + "delete GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     data = {"fileid" : {"type" : 1, "name" : "yellow2", "uid" : group_id}}
     r = requests.post(url + "deletefile", headers=headers_token, data=json.dumps(data))
