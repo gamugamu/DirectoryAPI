@@ -46,7 +46,7 @@ Fa01_DATE_FORMAT            = "%Y-%m-%d_%H:%M:%S"
 TOKEN_REQU_HEADER           = "token-request"
 TOKEN_HEADER                = "token"
 
-urlRoot     = "http://127.00.0.1:8000"
+urlRoot     = "http://127.00.0.1:8000/"
 version_API = "0.0.2"
 
 # graph
@@ -67,7 +67,7 @@ def decrypt(cipher):
 def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "WILL performtest ", urlRoot, urlRoot
 
-    url = urlRoot + "/rest/" + version_API + "/"
+    url = urlRoot + "rest/" + version_API + "/"
     apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     headers_requestToken    = {'content-type': 'application/json', 'token-request' : apirequestkey}
 
