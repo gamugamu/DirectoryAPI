@@ -2,27 +2,20 @@
 
   'use strict';
 
-  angular.module('WordcountApp', [])
+  angular.module('Directory-api', [])
 
-  .controller('WordcountController', ['$scope', '$log', '$http',
+  .controller('Directory-api-controller', ['$scope', '$log', '$http',
     function($scope, $log, $http) {
 
-    $scope.getResults = function() {
-      // get the URL from the input
-      var userInput = $scope.url;
-      $scope.result = ""
-      // fire the API request
-      $http.post('/start', {"url": userInput}).
+    $scope.perform_api_test = function() {
+      $http.post('/starttest').
         success(function(results) {
           $log.log(results);
-          $scope.result = results
         }).
         error(function(error) {
           $log.log(error);
         });
-
     };
-
   }
   ]);
 

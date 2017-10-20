@@ -1,57 +1,9 @@
-{% extends "bootstrap/base.html" %}
+{% extends "layout.html" %}
 
-{% block html %}
-{{super()}}
-<html ng-app="WordcountApp">
+{% block insidebody %}
+  {{ content }}
 {% endblock %}
 
-{% block title %}Directory-API Documentation{% endblock %}
-
-{% block styles %}
-{{super()}}
-<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
-<link href="{{ url_for('static', filename='codestyles.css') }}" type="text/css" rel="stylesheet">
+{% block insidesidebar %}
+{{ toc }}
 {% endblock %}
-
-{% block scripts %}
-<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
-<script src="{{ url_for('static', filename='main.js') }}"></script>
-{{super()}}
-{% endblock %}
-
-{% block navbar %}
-{% endblock %}
-
-{% block body_attribs %}
-ng-controller="WordcountController"
-{% endblock %}
-
-{% block content %}
-{{super()}}
-
-
-<div class="jumbotron jumbotron-fluid">
-  <div class="container">
-    <h1 class="display-3">Directory-API</h1>
-  </div>
-</div>
-<div class="container-fluid">
-  <div class="row">
-      <!-- main -->
-      <div class="col-sm-9">
-        {{ content }}
-      </div>
-      <!-- sidebar -->
-      <div class="col-sm-3 flex-first flex-md-unordered" data-offset-top="197" id="sidebar">
-        {{ toc }}
-      </div>
-  </div>
-</div>
-{%- block footer %}
-<footer>
-  <div id="footer">
-    <p>&copy; 2017 Directory-Api, Abadie Loïc<p>
-  </div>
-</footer>
-{%- endblock footer %}
-{%- endblock content %}

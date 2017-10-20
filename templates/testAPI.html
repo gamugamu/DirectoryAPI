@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block insidebody %}
+<!-- Indicates a successful or positive action -->
+<p>Le résultat du test apparait dans la console js</p>
+<form role="form" ng-submit="perform_api_test()">
+    <button type="submit" class="btn btn-default">Lancer le test</button>
+</form>
+{% endblock %}
+
+{% block insidesidebar %}
+{% endblock %}

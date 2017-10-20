@@ -48,7 +48,6 @@ TOKEN_HEADER                = "token"
 
 urlRoot     = "http://127.00.0.1:8000"
 version_API = "0.0.2"
-url         = urlRoot + "/rest/" + version_API + "/"
 
 # graph
 g_e = {"error" : {"code" : "", "description" : ""}};
@@ -65,7 +64,9 @@ def decrypt(cipher):
     obj2 = AES.new(AKEY, AES.MODE_CFB, iv)
     return obj2.decrypt(base64.urlsafe_b64decode(cipher))
 
-def performtest():
+def performtest(urlRoot=urlRoot, version_API=version_API):
+    
+    url = urlRoot + "/rest/" + version_API + "/"
     apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     headers_requestToken    = {'content-type': 'application/json', 'token-request' : apirequestkey}
 

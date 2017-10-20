@@ -1,0 +1,64 @@
+{% extends "bootstrap/base.html" %}
+
+{% block html %}
+{{super()}}
+<html ng-app="Directory-api">
+{% endblock %}
+
+{% block title %}Directory-API Documentation{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='codestyles.css') }}" type="text/css" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+{{super()}}
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar fixed-top navbar-light bg-faded naavbar">
+  <a class="navbar-brand" href="{{url_for('home')}}">Documentation</a>
+  <a class="navbar-brand" href="{{url_for('test_api')}}">Test</a>
+</nav>
+{% endblock %}
+
+{% block body_attribs %}
+ng-controller="Directory-api-controller"
+{% endblock %}
+
+{% block content %}
+{{super()}}
+<div class="jumbotron">
+  <div class="container">
+    <!-- header -->
+    <h1 class="display-3">Directory-API</h1>
+  </div>
+</div>
+
+<div class="container-fluid" id="wrap">
+  <div class="row" id="main">
+      <!-- main -->
+      <div class="col-sm-9">
+        {% block insidebody %}
+        {% endblock %}
+      </div>
+      <!-- sidebar -->
+      <div class="col-sm-3 flex-first flex-md-unordered" data-offset-top="197" id="sidebar">
+        {% block insidesidebar %}
+        {% endblock %}
+      </div>
+  </div>
+</div>
+
+{% block footer %}
+  <footer id="footer">
+    <div >
+      <p>&copy; 2017 Directory-Api, Abadie Loïc<p>
+    </div>
+  </footer>
+{% endblock %}
+{%- endblock content %}

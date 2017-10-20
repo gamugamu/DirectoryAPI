@@ -72,13 +72,22 @@ img {
 }
 
 .toc ul{
- margin-left:-20px;
+  margin-left:-20px;
+}
+
+.naavbar{
+    background-color: black;
+}
+
+.naavbar a{
+  color: #cccccc;
 }
 
 /* header */
 .jumbotron{
   background-color: #424242;
   color: white;
+  margin-top: -20px;
 }
 
 /* sidebar */
@@ -115,10 +124,19 @@ img {
   font-weight:normal;
 }
 
+body {
+  min-height: 100vh;
+  position: relative;
+  margin: 0;
+  padding-bottom: 200px;
+}
+
 #footer {
   background-color: #424242;
-  height: 120px;
+  width: 100%;
   margin-top: 40px;
   padding: 40px;
   color: white;
+  position: absolute;
+  bottom: 0px;
 }
