@@ -182,7 +182,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "\n==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
 
-    data = {"filetype" : {"type" : 1, "name" : "yellow5", "parentId" : ""}}
+    data = {"filetype" : {"type" : 1, "name" : " ", "parentId" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
     group_id = data["filepayload"]["uid"]
