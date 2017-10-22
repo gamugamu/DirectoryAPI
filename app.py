@@ -18,16 +18,15 @@ from testAPI import performtest
 from cloud import CloudService
 from helper import Sanityzer
 from jinja2 import Environment
-#from testAPI import performtest
 
-FLATPAGES_AUTO_RELOAD = True
-FLATPAGES_EXTENSION = '.md'
-FLATPAGES_ROOT = 'content'
+FLATPAGES_AUTO_RELOAD   = True
+FLATPAGES_EXTENSION     = '.md'
+FLATPAGES_ROOT          = 'content'
 
 app         = Flask(__name__)
 Bootstrap(app)
-app.config["CACHE_TYPE"] = "null"
-flatpages = FlatPages(app)
+app.config["CACHE_TYPE"]    = "null"
+flatpages                   = FlatPages(app)
 
 API_VERSION = "0.0.2"
 VERSION_URI = "/rest/" + API_VERSION + "/"
@@ -40,14 +39,15 @@ app.config['DEBUG'] = True
 
 @app.after_request
 def apply_caching(response):
-    response.headers["Version"] = API_VERSION
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
+    response.headers["Version"]         = API_VERSION
+    response.headers['Cache-Control']   = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma']          = 'no-cache'
+    response.headers['Expires']         = '0'
     return response
 
 @app.route(VERSION_URI)
 def home():
+    #sendmail("cryptodraco@gmail.com", "test", "bodybody")
     content = file('documentation.md').decode('utf8')
     content = Environment().from_string(content).render()
     md      = markdown.Markdown(content, extensions=['markdown.extensions.toc'])

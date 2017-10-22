@@ -43,9 +43,9 @@ class CloudService:
                     error, bucket, uri_path = self.retrieve_bucket_data_from_graph(parent_id)
 
                     if error == Error.SUCCESS:
-                        # Si c'est un dossier, le nom doit être formaté avec un .bzEmpty
                         if file_type == int(FileType.FOLDER):
                             file_name = self.append_as_folder(file_name)
+
                         return self.create_file_in_bucket(bunchify(bucket), owner_id, file_name, uri_path, parent_id)
                     else:
                         # graph error
@@ -88,15 +88,18 @@ class CloudService:
 
             if error == Error.SUCCESS:
                 data        = data["filepayload"]
-                pattern_key = "*" + data["uid"]
-                key         = Dbb.value_for_key(key=pattern_key)
+                if len(data["uid"]) != 32: #uuid lenght
+                    return Error.REDIS_KEY_UNKNOWN
+                else:
+                    pattern_key = "*" + data["uid"]
+                    key         = Dbb.value_for_key(key=pattern_key)
 
-                if key is not None:
-                    key = key.next()
+                    if key is not None:
+                        key = key.next()
 
-                #update content in redis
-                Dbb.store_collection(key=key, storeDict=data)
-                return Error.SUCCESS
+                        #update content in redis
+                        Dbb.store_collection(key=key, storeDict=data)
+                        return Error.SUCCESS
 
             else:
                 #graph error
@@ -150,17 +153,23 @@ class CloudService:
 ################# LOGIC ######################
 
     def create_new_bucket(self, bucket_name, owner_id):
-        bucket_id   = uuid.uuid4().hex
-        group       = FilePayload(  uid    = bucket_id,
-                                    name   = bucket_name,
-                                    type   = FileType.GROUP.value,
-                                    date   = generate_date_now(),
-                                    owner  = [owner_id])
-        # store
-        Dbb.store_collection(FileType.GROUP.name, bucket_id, group.__dict__)
-        self.add_user_ownership(owner_id, bucket_id)
+        is_entry_already_exist = Dbb.is_key_exist_forPattern("*|" + bucket_name + "|*")
 
-        return Error.SUCCESS, group
+        if is_entry_already_exist is False:
+            bucket_id   = uuid.uuid4().hex
+            group       = FilePayload(  uid    = bucket_id,
+                                        name   = bucket_name,
+                                        type   = FileType.GROUP.value,
+                                        date   = generate_date_now(),
+                                        owner  = [owner_id])
+            # store
+            Dbb.store_collection(FileType.GROUP.name, "|" + bucket_name + "|" + bucket_id, group.__dict__)
+            self.add_user_ownership(owner_id, bucket_id)
+
+            return Error.SUCCESS, group
+        else:
+            print "Error.REDIS_KEY_ALREADY_EXIST"
+            return Error.REDIS_KEY_ALREADY_EXIST, FilePayload()
 
     #supprime le bucket
     def delete_bucket(self, bucket_id, owner_id):
@@ -185,7 +194,8 @@ class CloudService:
             Dbb.remove_with_key_pattern(p_key= "*|" + child_id)
 
         bucket = FileHeader.fileHeader_to_dictionnary(bucket)
-        Dbb.store_collection(FileType.GROUP.name, bucket["uid"], bucket)
+        # TODO, uid path à refaire
+        Dbb.store_collection(FileType.GROUP.name, "****" + bucket["uid"], bucket)
 
         #les suppressions ont réussies
         return Error.SUCCESS
@@ -217,7 +227,8 @@ class CloudService:
 
                 #update data
                 Dbb.store_collection(FileType.FILE.name, redis_id, file_.__dict__)
-                Dbb.store_collection(FileType.GROUP.name, bucket.uid, unbunchify(bucket))
+                #TODO s'assurer que la clès et bien retrouver avant l'update
+                Dbb.store_collection(FileType.GROUP.name, "|" + bucket.name + "|" + bucket.uid, unbunchify(bucket))
 
                 return Error.SUCCESS, file_
             else:
@@ -228,63 +239,77 @@ class CloudService:
         file_pattern    = "*" + file_id
         file_           = bunchify(Dbb.collection_for_Pattern(file_pattern))
 
-        parent_pattern   = "*" + file_.parentId
-        parent           = Dbb.collection_for_Pattern(parent_pattern)
-        parent           = FileHeader.dictionnary_to_fileHeader(parent)
+        if file_ is not None:
+            try:
+                parent_pattern   = "*" + file_.parentId
+                parent           = Dbb.collection_for_Pattern(parent_pattern)
+                parent           = FileHeader.dictionnary_to_fileHeader(parent)
 
-        #remove childs from parent
-        parent.childsId.remove(file_id)
+                print "WILL REMOVE ", file_id
+                #remove childs from parent
+                parent.childsId.remove(file_id)
 
-        # remove
-        type_file = FileType.GROUP.name if int(parent.type) == int(FileType.GROUP.value) else FileType.FOLDER.name
+                # remove
+                type_file   = FileType.GROUP.name if int(parent.type) == int(FileType.GROUP.value) else FileType.FOLDER.name
+                e, data, file_graph  = self.retrieve_bucket_data_from_graph(parent.uid)
 
-        #update
-        Dbb.remove_with_key_pattern(file_pattern)
-        parent = FileHeader.fileHeader_to_dictionnary(parent)
-        Dbb.store_collection(type_file, parent["uid"], parent)
+                if file_graph == "":
+                    file_graph = parent['name']
+
+                #update
+                Dbb.remove_with_key_pattern(file_pattern)
+                parent = FileHeader.fileHeader_to_dictionnary(parent)
+                print "FILE GRAPH ", file_graph
+
+                Dbb.store_collection(type_file, "|" + file_graph + "|" + parent["uid"], parent)
+
+            except Exception as e:
+                #TODO gérer erreur si delete file inexistante
+                print "EXCEPTION: ", e, "didn't removed"
 
 ################# GRAPH ######################
 
     def retrieve_bucket_data_from_graph(self, parent_id, uri_path=""):
-        b_key   = "*_" + parent_id
-        f_key   = "*|" + parent_id
-        key     = ""
+        if parent_id == "":
+            return Error.FILE_NO_PARENT_ID, None, "";
+        else:
+            b_key   = "*_" + parent_id
+            f_key   = "*|" + parent_id
+            key     = ""
 
-        # le patterne est différent pour retrouver un folder ou un bucket
-        # il y a plus de chance de tomber sur un folder que sur un bucket.
-        if Dbb.is_key_exist_forPattern(f_key):
-            key = f_key
+            # le patterne est différent pour retrouver un folder ou un bucket
+            # il y a plus de chance de tomber sur un folder que sur un bucket.
+            if Dbb.is_key_exist_forPattern(f_key):
+                key = f_key
 
-        elif Dbb.is_key_exist_forPattern(b_key):
-            key = b_key
+            elif Dbb.is_key_exist_forPattern(b_key):
+                key = b_key
 
-        value = Dbb.value_for_key(key=key)
+            value = Dbb.value_for_key(key=key)
+            try:
+                parent_key = value.next()
 
-        try:
-            parent_key = value.next()
+                if FileType.GROUP.name in parent_key:
+                    # bucket trouvé. N'as pas de parent.
+                    bucket = Dbb.collection_for_Key(key=parent_key)
+                    return Error.SUCCESS, Dbb.collection_for_Key(key=parent_key), uri_path
+                else:
+                    # note, un fichier ne peut pas contenir un autre fichier,
+                    # donc forcement un folder
+                    folder      = Dbb.collection_for_Key(key=parent_key)
+                    folder      = bunchify(folder)
+                    uri_path    = self.append_path(folder.name, uri_path)
 
-            if FileType.GROUP.name in parent_key:
-                # bucket trouvé. N'as pas de parent.
-                bucket = Dbb.collection_for_Key(key=parent_key)
-                return Error.SUCCESS, Dbb.collection_for_Key(key=parent_key), uri_path
-            else:
-                # note, un fichier ne peut pas contenir un autre fichier,
-                # donc forcement un folder
-                folder      = Dbb.collection_for_Key(key=parent_key)
-                folder      = bunchify(folder)
-                uri_path    = self.append_path(folder.name, uri_path)
+                    return self.retrieve_bucket_data_from_graph(folder.parentId, uri_path)
 
-                return self.retrieve_bucket_data_from_graph(folder.parentId, uri_path)
-
-        except Exception as e:
-            print "EXCEPTION: ", e, key, "is not from graph"
-            return Error.REDIS_KEY_UNKNOWN, None, ""
+            except Exception as e:
+                print "EXCEPTION: ", e, key, "is not from graph"
+                return Error.REDIS_KEY_UNKNOWN, None, ""
 
 ################# USER OWNERSHIP ######################
 
     def add_user_ownership(self, user_id, group_id):
         user            = Dbb.collection_for_Key(typeKey=Type.USER.name, key=user_id)
-        print "user++ ", user, user_id
         user["group"]   = Dbb.appendedValue(user["group"], group_id)
 
         Dbb.store_collection(Type.USER.name, user_id, user)
@@ -305,10 +330,10 @@ class CloudService:
             return new_path.replace("//", "/")
 
     def sanityse_path(self, path):
-        return path.replace("/.bzEmpty", "")
+        return path
 
     def append_as_folder(self, path):
-        return path + "/.bzEmpty"
+        return path
 
 ################# GRAPH ######################
     def graph(self, from_error, request, owner_id):
@@ -317,13 +342,13 @@ class CloudService:
             error, data = validate_json(request, {"file_id": ""})
             print "++++++++++++"
             if error == Error.SUCCESS:
-                print "xxxxxxxxxxxxx"
+                print "xxxxxxxxxxxxx ", data
 
                 print self.retrieve_bucket_data_from_graph(data["file_id"])
 
             else:
-                return error
+                return error, "graph"
         else:
-            return from_error
+            return from_error, "graph"
 
         return from_error, "graph"

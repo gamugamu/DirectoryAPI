@@ -57,6 +57,7 @@ def decrypt(cipher):
     return obj2.decrypt(base64.urlsafe_b64decode(cipher))
 
 def performtest(urlRoot=urlRoot, version_API=urlRoot):
+    print "performtest ", urlRoot, version_API
     # Store the reference, in case you want to show things again in standard output
     old_stdout = sys.stdout
 
@@ -115,7 +116,9 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data                = json.loads(r.content)
     print "[#SbR02] bad password ", int(data["error"]["code"]) == 11 #invalid_user_password
 
-    email               = str(uuid.uuid4())[0:6] + "@gmail.com"
+    #email               = str(uuid.uuid4())[0:6] + "@gmail.com"
+    email               = "jean@gmail.com"
+
     password            = "superpassE0"
     crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
@@ -156,6 +159,12 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print data
     headers_token       = {'content-type': 'application/json', 'token' : token_session}
 
+    if len(data["user"]['group']):
+        MAIN_GROUP_ID = data['user']['group']
+    else:
+        MAIN_GROUP_ID = ""
+
+    print "MAIN_GROUP_ID ", MAIN_GROUP_ID
     print "\n==========" + url + "logout ==========="
     print  color.BOLD + color.PURPLE + "[#SeP01] [#SeD01] [#SeR01]" + color.END
     headers_token    = {'content-type': 'application/json', 'token' : token_session}
@@ -182,15 +191,15 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "\n==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
 
-    data = {"filetype" : {"type" : 1, "name" : " ", "parentId" : ""}}
+    data = {"filetype" : {"type" : 1, "name" : "yellow", "parentId" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
     group_id = data["filepayload"]["uid"]
     print "[#SfP01] uri ", r.status_code, "== 200", r.status_code == 200
     e       = iterate_through_graph(data, dict(g_e, **g_p))
-
+    print data
     print "[#SfD01] datastructure ", e.value == Error.SUCCESS.value
-    data = {"filetype" : {"type" : 6, "name" : "yellow5", "parentId" : ""}}
+    data = {"filetype" : {"type" : 6, "name" : "yellow", "parentId" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
     print r.content + "\n"
@@ -260,8 +269,10 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
-    folder_id = data["filepayload"]["uid"]
+    print data
 
+    folder_id = data["filepayload"]["uid"]
+    print "ffff", folder_id
     print "==========" + url + "create file in Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     data = {"filetype" : {"type" : 3, "name" : "pomme", "parentId" : folder_id}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
@@ -303,10 +314,10 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
 
 
     print "==========" + url + "GRAPH" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"file_id" : folder3_id}
+    data = {"file_id" : MAIN_GROUP_ID}
     r = requests.post(url + "graph", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
-
+    """
     print "==========" + url + "delete GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     data = {"fileid" : {"type" : 1, "name" : "yellow2", "uid" : group_id}}
     r = requests.post(url + "deletefile", headers=headers_token, data=json.dumps(data))
@@ -316,7 +327,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "==========" + url + "deleteaccount" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     r = requests.get(url + "deleteaccount", headers=headers_token)
     print r.content + "\n"
-
+    """
     print "==========" + url + "login again with same deleted account " + color.BOLD + color.CYAN + "(must fail)" + color.END + "==========="
     crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))

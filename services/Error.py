@@ -22,6 +22,7 @@ class Error(Enum):
     USER_ALREADY_LOGGED         = "32"
     USER_PASSW_MISTMATCH        = "33"
     FILE_UNKNOW_TYPE            = "50"
+    FILE_NO_PARENT_ID           = "51"
     FAILED_CREATE_GROUP         = "70"
     FAILED_DELETE_GROUP         = "71"
     FAILED_DELETE_FILE          = "73"
@@ -51,6 +52,7 @@ class Error(Enum):
             "32" : "You are already disconnected",
             "33" : "wrong password for this account",
             "50" : "file type is unknow or wrong, please read the documentation and provide a known type",
+            "51" : "parent uid is empty",
             "70" : "Error : Cannot create group.",
             "71" : "Error : Cannot delete group",
             "73" : "Error : Cannot delete file",
