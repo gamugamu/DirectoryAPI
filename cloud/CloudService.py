@@ -276,9 +276,14 @@ class CloudService:
 ################# GRAPH ######################
 
     def retrieve_bucket_data_from_graph(self, parent_id, uri_path=""):
+        #TODO: ne plus faire une recursion, mais un patterne sur parent_key
         if parent_id == "":
             return Error.FILE_NO_PARENT_ID, None, "";
         else:
+            #
+            t_key           = Dbb.keys(pattern= "*" + parent_id);
+            bucket_key_name = t_key[0].split("|")[1].split("/")[0]
+
             b_key   = "*_" + parent_id
             f_key   = "*|" + parent_id
             key     = ""
@@ -292,7 +297,7 @@ class CloudService:
                 key = b_key
 
             value = Dbb.value_for_key(key=key)
-            print "REtrieve 1"
+            print "REtrieve 1", key, t_key, bucket_key_name
             try:
                 parent_key = value.next()
 
@@ -307,7 +312,7 @@ class CloudService:
                     folder      = Dbb.collection_for_Key(key=parent_key)
                     folder      = bunchify(folder)
                     uri_path    = self.append_path(folder.name, uri_path)
-                    
+
                     print "REtrieve 3", uri_path, folder
 
                     if int(folder.type) == int(FileType.GROUP.value):
