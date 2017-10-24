@@ -15,6 +15,9 @@ def volatil_store(typeKey, key, storeDict, time):
 def generated_key(typeKey, key):
     return typeKey + "_" + key
 
+def keys(pattern=""):
+    return r.keys(pattern)
+
 def is_key_exist(typeKey, key):
     return r.exists(generated_key(typeKey, key))
 

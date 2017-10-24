@@ -191,25 +191,28 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "\n==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
 
-    data = {"filetype" : {"type" : 1, "name" : "yellow", "parentId" : ""}}
+    data = {"filetype" : {"type" : 1, "name" : "YELLOW", "parentId" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
-    group_id = data["filepayload"]["uid"]
+
+    if MAIN_GROUP_ID == "":
+        MAIN_GROUP_ID = data["filepayload"]["uid"]
+
     print "[#SfP01] uri ", r.status_code, "== 200", r.status_code == 200
     e       = iterate_through_graph(data, dict(g_e, **g_p))
     print data
     print "[#SfD01] datastructure ", e.value == Error.SUCCESS.value
-    data = {"filetype" : {"type" : 6, "name" : "yellow", "parentId" : ""}}
-    r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
-    data = json.loads(r.content)
+    data    = {"filetype" : {"type" : 6, "name" : "BAD_yellow", "parentId" : ""}}
+    r       = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
+    data    = json.loads(r.content)
     print r.content + "\n"
-
+    print "TEST MAIN_GROUP_ID", MAIN_GROUP_ID
     print "[#SfR01] datastructure ", e.value == Error.SUCCESS.value
     print "[#SfR01] error wrong type ", int(data["error"]["code"]) == 50 #wrong type code
 
 
     print "\n==========" + url + "create File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 3, "name" : "subYellow", "parentId" : group_id}}
+    data = {"filetype" : {"type" : 2, "name" : "yellow_folder", "parentId" : MAIN_GROUP_ID}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
     file1       = data
@@ -217,7 +220,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print r.content + "\n"
 
     print "\n==========" + url + "create File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 3, "name" : "fdsfgg", "parentId" : group_id}}
+    data = {"filetype" : {"type" : 3, "name" : "yellow_file", "parentId" : MAIN_GROUP_ID}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
     file1       = data
@@ -239,14 +242,14 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "========================================="
 
     print "==========" + url + "create File in Group (2)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 3, "name" : "subGreen", "parentId" : group_id}}
+    data = {"filetype" : {"type" : 3, "name" : "subGreen", "parentId" : MAIN_GROUP_ID}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
     file2_id = data["filepayload"]["uid"]
 
     print "==========" + url + "create File in Group (3)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 3, "name" : "subRed", "parentId" : group_id}}
+    data = {"filetype" : {"type" : 3, "name" : "subRed", "parentId" : MAIN_GROUP_ID}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data    = json.loads(r.content)
@@ -259,20 +262,20 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data = json.loads(r.content)
 
     print "==========" + url + "get headers " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"fileids" : [group_id, file2_id, file1_id]}
+    data = {"fileids" : [MAIN_GROUP_ID, file2_id, file1_id]}
     r = requests.post(url + "filesheader", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
 
     print "==========" + url + "create Folder in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 2, "name" : "fruits", "parentId" : group_id}}
+    data = {"filetype" : {"type" : 2, "name" : "fruits", "parentId" : MAIN_GROUP_ID}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
     print data
 
     folder_id = data["filepayload"]["uid"]
-    print "ffff", folder_id
+    print "fffffff", folder_id
     print "==========" + url + "create file in Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     data = {"filetype" : {"type" : 3, "name" : "pomme", "parentId" : folder_id}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
@@ -280,6 +283,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data = json.loads(r.content)
 
     print "==========" + url + "create Folder in Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    print "legumes", folder_id
     data = {"filetype" : {"type" : 2, "name" : "legumes", "parentId" : folder_id}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
@@ -317,6 +321,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data = {"file_id" : MAIN_GROUP_ID}
     r = requests.post(url + "graph", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
+    print "MAIN_GROUP_ID ", MAIN_GROUP_ID
     """
     print "==========" + url + "delete GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     data = {"fileid" : {"type" : 1, "name" : "yellow2", "uid" : group_id}}
