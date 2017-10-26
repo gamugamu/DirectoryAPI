@@ -321,7 +321,13 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data = {"file_id" : MAIN_GROUP_ID}
     r = requests.post(url + "graph", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
-    print "MAIN_GROUP_ID ", MAIN_GROUP_ID
+
+    print "==========" + url + "GRAPH_2" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    data = {"file_id" : folder_id}
+    r = requests.post(url + "graph", headers=headers_token, data=json.dumps(data))
+    print "folder_id ", folder_id
+    print r.content + "\n"
+
     """
     print "==========" + url + "delete GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     data = {"fileid" : {"type" : 1, "name" : "yellow2", "uid" : group_id}}

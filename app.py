@@ -175,7 +175,7 @@ def graph():
     securityLvl             = Security.SecurityLevel.LOGGED
     error                   = Security.check_if_token_allow_access(request, securityLvl)
     user_id                 = Security.user_id_from_request(request)
-    error, files_payload    = cloud.graph(error, request, user_id)
+    error, graph            = cloud.graph(error, request, user_id)
     errorDesc               = Security.Error.asDescription(error)
 
-    return json.dumps({"error" : errorDesc.__dict__, "filesheader" : files_payload})
+    return json.dumps({"error" : errorDesc.__dict__, "graph" : graph})

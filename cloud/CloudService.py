@@ -17,6 +17,10 @@ from services.TypeRedis import FileType
 from services.Error import Error
 from Model.File import FilePayload, FileHeader
 
+#graph
+import operator
+import dpath.util
+
 class CloudService:
 
     def __init__(self):
@@ -46,6 +50,7 @@ class CloudService:
                     if error == Error.SUCCESS:
                         if file_type == int(FileType.FOLDER):
                             file_name = self.append_as_folder(file_name)
+
                         return self.create_file_in_folder(bunchify(bucket), owner_id, file_name, uri_path, parent_id, file_type)
                     else:
                         # graph error
@@ -203,9 +208,7 @@ class CloudService:
     def create_file_in_folder(self, bucket, owner_id, file_name, uri_path, parentId, file_type):
         if bucket is not None:
             uri_path      = self.append_path(uri_path, file_name)
-            full_uri_path = self.append_path(bucket.name, uri_path)
-
-            is_entry_already_exist = Dbb.is_key_exist_forPattern("*|" + full_uri_path + "|*")
+            is_entry_already_exist = Dbb.is_key_exist_forPattern("*|" + uri_path + "|*")
 
             # Si il n'existe pas d'entrée, alors on peux créer le fichier
             if is_entry_already_exist == False:
@@ -222,15 +225,12 @@ class CloudService:
                                         owner     = [owner_id],
                                         parentId  = parentId)
 
-                print "NAMEE: ", self.sanityse_path(file_name), parentId
-                full_uri_path       = self.sanityse_path(full_uri_path)
-                redis_id            = "|" + full_uri_path + "|" + file_id
+                redis_id            = "|" + uri_path + "|" + file_id
                 parent_path_key     = Dbb.keys(pattern = "*" + parentId + "*")
                 parent              = bunchify(Dbb.collection_for_Key(key=parent_path_key[0]))
 
                 # store_file
                 Dbb.store_collection(FileType(int(file_type)).name, redis_id, file_.__dict__)
-                print "UPdate ", parent_path_key , "(", self.sanityse_path(file_name), ")"
 
                 #update data
                 bucket.childsId = Dbb.appendedValue(bucket.childsId, file_id)
@@ -276,50 +276,19 @@ class CloudService:
 ################# GRAPH ######################
 
     def retrieve_bucket_data_from_graph(self, parent_id, uri_path=""):
-        #TODO: ne plus faire une recursion, mais un patterne sur parent_key
         if parent_id == "":
             return Error.FILE_NO_PARENT_ID, None, "";
         else:
             #
-            t_key           = Dbb.keys(pattern= "*" + parent_id);
-            bucket_key_name = t_key[0].split("|")[1].split("/")[0]
-
-            b_key   = "*_" + parent_id
-            f_key   = "*|" + parent_id
-            key     = ""
-
-            # le patterne est différent pour retrouver un folder ou un bucket
-            # il y a plus de chance de tomber sur un folder que sur un bucket.
-            if Dbb.is_key_exist_forPattern(f_key):
-                key = f_key
-
-            elif Dbb.is_key_exist_forPattern(b_key):
-                key = b_key
-
-            value = Dbb.value_for_key(key=key)
-            print "REtrieve 1", key, t_key, bucket_key_name
             try:
-                parent_key = value.next()
+                # retrouve le bon bucket et renvoie l'uri.
+                t_key                = Dbb.keys(pattern= "*" + parent_id);
+                bucket_key_name      = t_key[0].split("|")[1].split("/")[0]
+                bucket_full_key_name = Dbb.keys(pattern= "*|" + bucket_key_name + "|*")[0];
+                bucket               = Dbb.collection_for_Key(key=bucket_full_key_name)
+                uri_path             = t_key[0].split("|")[1]
 
-                if FileType.GROUP.name in parent_key:
-                    # bucket trouvé. N'as pas de parent.
-                    bucket = Dbb.collection_for_Key(key=parent_key)
-                    return Error.SUCCESS, bucket, uri_path
-                else:
-                    print "REtrieve 2 ", parent_key
-                    # note, un fichier ne peut pas contenir un autre fichier,
-                    # donc forcement un folder
-                    folder      = Dbb.collection_for_Key(key=parent_key)
-                    folder      = bunchify(folder)
-                    uri_path    = self.append_path(folder.name, uri_path)
-
-                    print "REtrieve 3", uri_path, folder
-
-                    if int(folder.type) == int(FileType.GROUP.value):
-                        return Error.SUCCESS, folder, uri_path
-
-                    else:
-                        return self.retrieve_bucket_data_from_graph(folder.parentId, uri_path)
+                return Error.SUCCESS, bucket, uri_path
 
             except Exception as e:
                 print "EXCEPTION: ", e, key, "is not from graph"
@@ -362,16 +331,33 @@ class CloudService:
             if error == Error.SUCCESS:
                 #print data
                 file_id = data["file_id"]
-                self.recurse_graph(file_id, 3, 0)
+                return self.recurse_graph(file_id, 3, 0)
 
             else:
-                return error, "graph"
+                return error, ""
         else:
-            return from_error, "graph"
+            return from_error, ""
 
-        return from_error, "graph"
+        return from_error, ""
 
     def recurse_graph(self, file_id, max_depht, incr_deph):
-        print "################## ", file_id
-        file_   = Dbb.keys(pattern="*" + file_id)
-        print "current file", file_
+        file_full_key_name = Dbb.keys(pattern="*" + file_id)
+
+        try:
+            # retrouve le bon bucket et renvoie l'uri.
+            file_base_key_name  = file_full_key_name[0].split("|")[1]
+            graph_keys          = Dbb.keys(pattern= "*|" + file_base_key_name + "*");
+
+            full_graph  = {}
+            for x in graph_keys:
+                # rappel 0: type de fichier, 1:path, 2:uid
+                splits = x.split("|")
+                path   = splits[1]
+
+                dpath.util.new(full_graph , path + "/uid", splits[2])
+
+            return Error.SUCCESS, full_graph
+
+        except Exception as e:
+            print "EXCEPTION: ", e, "is not from graph"
+            return Error.REDIS_KEY_UNKNOWN, ""
