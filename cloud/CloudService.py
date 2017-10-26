@@ -331,7 +331,10 @@ class CloudService:
             if error == Error.SUCCESS:
                 #print data
                 file_id = data["file_id"]
-                return self.recurse_graph(file_id, 3, 0)
+                if file_id == "":
+                    return  Error.FILE_NO_PARENT_ID, ""
+                else:
+                    return self.recurse_graph(file_id, 3, 0)
 
             else:
                 return error, ""
@@ -341,8 +344,9 @@ class CloudService:
         return from_error, ""
 
     def recurse_graph(self, file_id, max_depht, incr_deph):
+        print "file_id--- ", file_id
         file_full_key_name = Dbb.keys(pattern="*" + file_id)
-
+        print "file_full_key_name ", file_full_key_name
         try:
             # retrouve le bon bucket et renvoie l'uri.
             file_base_key_name  = file_full_key_name[0].split("|")[1]
