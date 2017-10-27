@@ -311,6 +311,26 @@ commande| data
 * **En cas de succées**, retourne un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success] et la liste des [[**#Ia04**:FilePayload](#ia04-filepayload)] récupérés.
 * **En cas d’échec**, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur.
 
+## GRAPH
+
+Renvoie la hierachie d'une collection de documents.
+
+commande| data
+------- | -------------
+{: .uri } **URI** | [root]/rest/[v]/graph
+{: .header } **HEADER** | \{**token**: [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right:** >= logged]}
+{: .post } **POST** | {**filesid:** [[**#Ia02:**FileID](#ia02-fileid)]}
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error),  **filespayload:** [[**#Ia04**:FilePayload](#ia04-filepayload)]}
+
+### #SkP01
+* Le service est en POST **[root]/rest/[v]/graph**.
+* En POST, Le [[**#Ia02:**FileID](#ia02-fileid)] du fichier.  
+* Le header contient le [**#Fb02**:TokenFormat](#fb02-tokenformat) avec des droits supérieurs ou égaux à unauth.
+
+### #SkD01
+* **En cas de succées**, retourne le graph des fichiers enfants en liste hierarchique. [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success] et la liste des [[**#Ia04**:FilePayload](#ia04-filepayload)] récupérés.
+* **En cas d’échec**, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur et un graph vide.
+
 ---
 # Datastructures
 ---

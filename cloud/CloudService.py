@@ -44,7 +44,7 @@ class CloudService:
                     return self.create_new_bucket(file_name, owner_id)
 
                 elif file_type in (FileType.FILE, FileType.FOLDER): # file or folder
-                    print "aaaac1", error, parent_id
+
                     error, bucket, uri_path = self.retrieve_bucket_data_from_graph(parent_id)
 
                     if error == Error.SUCCESS:
