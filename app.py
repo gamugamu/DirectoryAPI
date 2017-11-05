@@ -6,6 +6,8 @@ from flask import Flask
 from flask import Response
 from flask import request, url_for
 from flask import render_template
+from flask import make_response
+
 from flask import Markup
 from flask_bootstrap import Bootstrap
 from flask_flatpages import FlatPages, pygments_style_defs
@@ -43,6 +45,8 @@ def apply_caching(response):
     response.headers['Cache-Control']   = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma']          = 'no-cache'
     response.headers['Expires']         = '0'
+    response.headers['Access-Control-Allow-Origin']         = '*'
+
     return response
 
 @app.route(VERSION_URI)
