@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# coding: utf8
 import datetime
 from StringIO import StringIO  # Python2
 import sys
@@ -48,8 +47,11 @@ g_t = {"token" : {"hash" : "", "dateLimit" : "", "right" : ""}};
 g_p = {"filepayload" : {"type" : "", "name" : "", "parentId" : "", "uid" :"", "owner" : "",
 "title" : "", "date" : "", "rules": "", "childsId": ""}};
 
+print "TEST", base64.urlsafe_b64encode("test"),
+
 def encrypt(message):
     obj = AES.new(AKEY, AES.MODE_CFB, iv)
+    #print "encrypted", encrypted
     return base64.urlsafe_b64encode(obj.encrypt(message))
 
 def decrypt(cipher):
@@ -67,7 +69,11 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     sys.stdout = result
 
     url = urlRoot + "rest/" + version_API + "/"
+    print AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT)
+
     apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+    print apirequestkey
+
     headers_requestToken    = {'content-type': 'application/json', 'token-request' : apirequestkey}
 
     print "\n\n\n========== launching test on " + url + " API. ==========="
