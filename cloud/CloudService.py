@@ -273,26 +273,15 @@ class CloudService:
                 #TODO gérer erreur si delete file inexistante
                 print "EXCEPTION: ", e, "didn't removed"
 
-################# GRAPH ######################
+    def get_file_by_name(self, file_name):
+        file_       = {}
+        group_key   = Dbb.keys(pattern="*|" + file_name + "|*")
 
-    def retrieve_bucket_data_from_graph(self, parent_id, uri_path=""):
-        if parent_id == "":
-            return Error.FILE_NO_PARENT_ID, None, "";
+        if len(group_key) > 0:
+            file_ = Dbb.collection_for_Key(key=group_key[0])
+            return Error.SUCCESS, file_
         else:
-            #
-            try:
-                # retrouve le bon bucket et renvoie l'uri.
-                t_key                = Dbb.keys(pattern= "*" + parent_id);
-                bucket_key_name      = t_key[0].split("|")[1].split("/")[0]
-                bucket_full_key_name = Dbb.keys(pattern= "*|" + bucket_key_name + "|*")[0];
-                bucket               = Dbb.collection_for_Key(key=bucket_full_key_name)
-                uri_path             = t_key[0].split("|")[1]
-
-                return Error.SUCCESS, bucket, uri_path
-
-            except Exception as e:
-                print "EXCEPTION: ", e, key, "is not from graph"
-                return Error.REDIS_KEY_UNKNOWN, None, ""
+            return Error.FILE_NOT_FOUND, file_
 
 ################# USER OWNERSHIP ######################
 
@@ -324,10 +313,29 @@ class CloudService:
         return path
 
 ################# GRAPH ######################
+    def retrieve_bucket_data_from_graph(self, parent_id, uri_path=""):
+        if parent_id == "":
+            return Error.FILE_NO_PARENT_ID, None, "";
+        else:
+            #
+            try:
+                # retrouve le bon bucket et renvoie l'uri.
+                t_key                = Dbb.keys(pattern= "*" + parent_id);
+                bucket_key_name      = t_key[0].split("|")[1].split("/")[0]
+                bucket_full_key_name = Dbb.keys(pattern= "*|" + bucket_key_name + "|*")[0];
+                bucket               = Dbb.collection_for_Key(key=bucket_full_key_name)
+                uri_path             = t_key[0].split("|")[1]
+
+                return Error.SUCCESS, bucket, uri_path
+
+            except Exception as e:
+                print "EXCEPTION: ", e, key, "is not from graph"
+                return Error.REDIS_KEY_UNKNOWN, None, ""
+
     def graph(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
             error, data = validate_json(request, {"file_id": ""})
-        
+
             if error == Error.SUCCESS:
                 #print data
 

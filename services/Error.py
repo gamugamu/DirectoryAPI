@@ -23,6 +23,8 @@ class Error(Enum):
     USER_PASSW_MISTMATCH        = "33"
     FILE_UNKNOW_TYPE            = "50"
     FILE_NO_PARENT_ID           = "51"
+    FILE_NOT_FOUND              = "52"
+
     FAILED_CREATE_GROUP         = "70"
     FAILED_DELETE_GROUP         = "71"
     FAILED_DELETE_FILE          = "73"
@@ -53,6 +55,7 @@ class Error(Enum):
             "33" : "wrong password for this account",
             "50" : "file type is unknow or wrong, please read the documentation and provide a known type",
             "51" : "parent uid is empty",
+            "52" : "file not found",
             "70" : "Error : Cannot create group.",
             "71" : "Error : Cannot delete group",
             "73" : "Error : Cannot delete file",

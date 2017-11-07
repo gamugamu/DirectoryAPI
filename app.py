@@ -126,6 +126,14 @@ def delete_account():
 
     return json.dumps({"error" : errorDesc.__dict__})
 
+@app.route(VERSION_URI + 'groupbyname/<name>', methods=['GET'])
+def group_by_name(name):
+    securityLvl         = Security.SecurityLevel.NONE
+    error, _file        = cloud.get_file_by_name(name)
+    errorDesc           = Security.Error.asDescription(error)
+
+    return json.dumps({"error" : errorDesc.__dict__, "filepayload" : _file})
+
 @app.route(VERSION_URI + 'createfile', methods=['POST'])
 def create_file():
     securityLvl         = Security.SecurityLevel.LOGGED
