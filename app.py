@@ -178,7 +178,7 @@ def files_payload():
 
 @app.route(VERSION_URI + 'graph', methods=['POST'])
 def graph():
-    securityLvl             = Security.SecurityLevel.LOGGED
+    securityLvl             = Security.SecurityLevel.NONE
     error                   = Security.check_if_token_allow_access(request, securityLvl)
     user_id                 = Security.user_id_from_request(request)
     error, graph            = cloud.graph(error, request, user_id)

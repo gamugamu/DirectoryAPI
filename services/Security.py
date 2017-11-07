@@ -12,13 +12,10 @@ import Dbb
 from TypeRedis import Type
 from Error import Error
 
-AKEY    = 'd872eebd3967a9a00bdcb7235b491d87'
-iv      = 'key-directoryAPI'
+AKEY        = 'd872eebd3967a9a00bdcb7235b491d87'
+BLOCK_SIZE  = 16
 
-s_AKEY    = 'W8$04K5D98WA6WIIGRMPREOC3GTAYCV2'
-s_iv      = 'black_cerberus|*'
-
-TOKEN_UNAUTH_TIME_EXPIRATION_SEC    = 10 # secondes
+TOKEN_UNAUTH_TIME_EXPIRATION_SEC    = 100 # secondes
 TOKEN_AUTH_TIME_EXPIRATION_SEC      = 10000 # secondes
 
 Fa01_DATE_FORMAT                    = "%Y-%m-%d_%H:%M:%S"
@@ -37,13 +34,14 @@ class Token():
         self.secret_uuid    = ""
         self.date_limit     = ""
         self.right          = SecurityLevel.NONE.value
+        self.owner          = ""
 
     def description(self):
         if self.secret_uuid == "":
             #token invalide
             return ""
         else:
-            return str(self.secret_uuid) + "|" + str(self.right) + "|" + self.date_limit
+            return str(self.secret_uuid) + "|" + str(self.right) + "|" + self.date_limit + '|' + self.owner
 
     def as_dict(self):
         return {
@@ -52,47 +50,39 @@ class Token():
             "right" : str(self.right)}
 
     def secret_description(self):
-        return encrypt(self.description(), akey=s_AKEY, _iv=s_iv)
+        #TODO Sha256
+        return self.description()
 
     @staticmethod
     def decrypt_secret_description(token_value):
-        return decrypt(token_value, akey=s_AKEY, _iv=s_iv)
+        #TODO Sha256
+        return token_value
 
-def encrypt(message, akey=AKEY, _iv=iv):
-    obj = AES.new(akey, AES.MODE_CFB, _iv)
-    return base64.urlsafe_b64encode(obj.encrypt(message))
+def pad(data):
+    length = 16 - (len(data) % 16)
+    return data + chr(length)*length
 
-def decrypt(cipher, akey=AKEY, _iv=iv):
-    obj2 = AES.new(akey, AES.MODE_CFB, _iv)
-    return obj2.decrypt(base64.urlsafe_b64decode(cipher))
+def unpad(data):
+    return data[:-ord(data[-1])]
 
-def encrypt_with_security_level(data_to_encrypt, lvSecurity):
-    _akey = AKEY if lvSecurity.value == SecurityLevel.UNAUTH.value else s_AKEY
-    _iv   = iv if lvSecurity.value == SecurityLevel.UNAUTH.value else s_iv
+def encrypt(message, passphrase):
+    IV = Random.new().read(BLOCK_SIZE)
+    aes = AES.new(passphrase, AES.MODE_CFB, IV, segment_size=128)
+    return base64.b64encode(IV + aes.encrypt(pad(message)))
 
-    return encrypt(str(data_to_encrypt), _akey, _iv)
-
-def decrypt_with_security_level(data_to_decrypt, lvSecurity):
-    try:
-        _akey = AKEY if lvSecurity.value == SecurityLevel.UNAUTH.value else s_AKEY
-        _iv   = iv if lvSecurity.value == SecurityLevel.UNAUTH.value else s_iv
-
-        decrypt_pass = decrypt(str(data_to_decrypt), _akey, _iv)
-            # security level
-        return decrypt_pass.replace(_akey + "|", "")
-
-    except Exception as e:
-        print(e)
-        return ""
+def decrypt(encrypted, passphrase):
+    encrypted = base64.b64decode(encrypted)
+    IV = encrypted[:BLOCK_SIZE]
+    aes = AES.new(passphrase, AES.MODE_CFB, IV, segment_size=128)
+    return unpad(aes.decrypt(encrypted[BLOCK_SIZE:]))
 
 def check_if_token_allow_access(request, securityLvl):
     # demande de token
     if securityLvl == SecurityLevel.NONE:
         if TOKEN_REQU_HEADER in request.headers:
             crypted_token_request = request.headers.get(TOKEN_REQU_HEADER)
-
             try:
-                token_request = decrypt(str(crypted_token_request))
+                token_request = decrypt(crypted_token_request, AKEY)
                 # security level
                 if AKEY in token_request:
                     return Error.SUCCESS
@@ -112,20 +102,24 @@ def check_if_token_allow_access(request, securityLvl):
             if token_key == None:
                 return Error.INVALID_TOKEN_BLANK
             else:
-                decrypted_token = Token.decrypt_secret_description(str(token_key))
+                try:
 
-                token_data  = decrypted_token.split("|")
-                right       = token_data[2]
-                type_key    = Type.TOKEN.name if right <= SecurityLevel.UNAUTH.value else Type.SESSION.name
-                token       = Dbb.value_for_key(typeKey=type_key, key=token_key)
+                    decrypted_token = Token.decrypt_secret_description(str(token_key))
+                    token_data  = decrypted_token.split("|")
+                    right       = int(token_data[1])
+                    #print("Right***", token_data)
+                    type_key    = Type.TOKEN.name if right <= SecurityLevel.UNAUTH.value else Type.SESSION.name
+                    token       = Dbb.value_for_key(typeKey=type_key, key=token_key)
 
-                if token == None:
-                    # ne devrait pas arriver. Sauf si une personne est capable de générer de faux
-                    # ticket.
-                    return Error.INVALID_TOKEN
-                else:
-                    return Error.SUCCESS
-
+                    if token == None:
+                        # ne devrait pas arriver. Sauf si une personne est capable de générer de faux
+                        # ticket.
+                        return Error.INVALID_TOKEN
+                    else:
+                        return Error.SUCCESS
+                except Exception as e:
+                    print(e)
+                    return Error.INVALID_APIKEY
         else:
             return Error.TOKEN_HEADER_MISSING
     # n'arrive jamais
@@ -149,10 +143,11 @@ def generateToken(isValid, securityLvl, from_request):
 
 def generate_Session_token(secret_keys, from_request):
     token = Token()
-    print "secret_keys", secret_keys
-    token.secret_uuid   = uuid.uuid4().hex + "|" + secret_keys[3] # account
+
+    token.secret_uuid   = uuid.uuid4().hex
     token.date_limit    = (datetime.now() + timedelta(seconds=TOKEN_UNAUTH_TIME_EXPIRATION_SEC)).strftime(Fa01_DATE_FORMAT)
     token.right         = SecurityLevel.LOGGED.value
+    token.owner         = secret_keys[2] # account
 
     Dbb.volatil_store(
         typeKey     = Type.SESSION.name,
@@ -171,11 +166,16 @@ def generate_blank_token():
 
 # >= .UNAUTH
 def user_id_from_request(request):
-    crypt_token     = token_from_header(request)
-    decrypt_token   = decrypt_with_security_level(crypt_token, SecurityLevel.LOGGED)
-    data_token      = decrypt_token.split("|")
-
-    return data_token[1] #account
+    try:
+        #TODO sha256
+        crypt_token     = token_from_header(request)
+        data_token      = crypt_token.split("|")
+        #decrypt_token   = decrypt(crypt_token, AKEY)
+        #data_token      = decrypt_token.split("|")
+        return data_token[3] #account
+    except Exception as e:
+        print(e)
+        return Error.INVALID_APIKEY
 
 def token_from_header(request):
     return request.headers[TOKEN_HEADER]

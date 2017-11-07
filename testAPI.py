@@ -5,6 +5,8 @@ import sys
 
 from services.Error import Error
 from services.JSONValidator import iterate_through_graph
+from services.Security import encrypt
+
 from datetime import datetime, timedelta
 import base64
 import uuid
@@ -31,7 +33,8 @@ class color:
    END          = '\033[0m'
 
 AKEY    = 'd872eebd3967a9a00bdcb7235b491d87'
-iv      = 'key-directoryAPI'
+AKEY2    = 'd872eebd3967a9a00bdcb7235b491d00'
+
 TOKEN_TIME_EXPIRATION_SEC   = 10000
 Fa01_DATE_FORMAT            = "%Y-%m-%d_%H:%M:%S"
 TOKEN_REQU_HEADER           = "token-request"
@@ -47,32 +50,21 @@ g_t = {"token" : {"hash" : "", "dateLimit" : "", "right" : ""}};
 g_p = {"filepayload" : {"type" : "", "name" : "", "parentId" : "", "uid" :"", "owner" : "",
 "title" : "", "date" : "", "rules": "", "childsId": ""}};
 
-print "TEST", base64.urlsafe_b64encode("test"),
-
-def encrypt(message):
-    obj = AES.new(AKEY, AES.MODE_CFB, iv)
-    #print "encrypted", encrypted
-    return base64.urlsafe_b64encode(obj.encrypt(message))
-
-def decrypt(cipher):
-    obj2 = AES.new(AKEY, AES.MODE_CFB, iv)
-    return obj2.decrypt(base64.urlsafe_b64decode(cipher))
-
 def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "performtest ", urlRoot, version_API
     # Store the reference, in case you want to show things again in standard output
-    old_stdout = sys.stdout
+    #old_stdout = sys.stdout
 
     # This variable will store everything that is sent to the standard output
-    result = StringIO()
+    #result = StringIO()
 
-    sys.stdout = result
+    #sys.stdout = result
 
     url = urlRoot + "rest/" + version_API + "/"
     print AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT)
 
-    apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
-    print apirequestkey
+    apirequestkey           = encrypt(AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT), AKEY)
+    print "apirequestkey", apirequestkey
 
     headers_requestToken    = {'content-type': 'application/json', 'token-request' : apirequestkey}
 
@@ -89,7 +81,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     r       = requests.get(url + "asktoken", headers=headers_requestToken)
     data    = json.loads(r.content)
     token   = data["token"]["hash"]
-
+    print "TOKEN++++", token
     print "[#SaP01] url: ", r.status_code, "== 200", r.status_code == 200
 
     e = iterate_through_graph(data, {"error" : {"code" : "", "description" : ""}, "token" : {"hash" : "", "right" : "", "dateLimit" : ""}})
@@ -109,7 +101,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
 
     email               = str(uuid.uuid4())[0:6] + "fd.com"
     password            = "superpassE0"
-    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT), AKEY)
     r       = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
     data    = json.loads(r.content)
 
@@ -117,7 +109,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
 
     email               = str(uuid.uuid4())[0:6] + "@fddfs.com"
     password            = "superp___0"
-    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT), AKEY)
     r                   = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
     data                = json.loads(r.content)
     print "[#SbR02] bad password ", int(data["error"]["code"]) == 11 #invalid_user_password
@@ -126,7 +118,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     email               = "jean@gmail.com"
 
     password            = "superpassE0"
-    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT), AKEY)
     r = requests.post(url + "createaccount", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email, "cryptpassword" : crypted_password}}))
     data                = json.loads(r.content)
 
@@ -141,7 +133,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "\n==========" + url + "login ==========="
     print  color.BOLD + color.PURPLE + "[#SdP01] [#SdD01] [#SdR01]" + color.END
 
-    crypted_password    = encrypt(AKEY + "|" + "superpassE2" + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+    crypted_password    = encrypt(AKEY + "|" + "superpassE2" + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT), AKEY)
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
     print "[#SdP01] uri ", r.status_code, "== 200", r.status_code == 200
     data    = json.loads(r.content)
@@ -151,12 +143,12 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "[#SdR01] wrong-password ", int(data["error"]["code"]) == 33 # wring password code
 
     false_account = "chewi@gmail.ocm"
-    crypted_password    = encrypt(AKEY + "|" + password + "|" + false_account + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+    crypted_password    = encrypt(AKEY + "|" + password + "|" + false_account + "|" + datetime.now().strftime(Fa01_DATE_FORMAT), AKEY)
     r       = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : false_account , "cryptpassword" : crypted_password}}))
     data    = json.loads(r.content)
     print "[#SdR01] user not found ", int(data["error"]["code"]) == 31 # user not found
 
-    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT), AKEY)
     r       = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
     data    = json.loads(r.content)
     print "[#SdR01] login OK", int(data["error"]["code"]) == 1 # success
@@ -186,7 +178,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "[#SeR01] re-logout", int(data["error"]["code"]) == 3 # false token
 
     print "\n==========" + url + "re-login attempt ==========="
-    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT), AKEY)
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
     token_session       = json.loads(r.content)["token"]["hash"]
     headers_token       = {'content-type': 'application/json', 'token' : token_session}
@@ -346,11 +338,12 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print r.content + "\n"
     """
     print "==========" + url + "login again with same deleted account " + color.BOLD + color.CYAN + "(must fail)" + color.END + "==========="
-    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT))
+    crypted_password    = encrypt(AKEY + "|" + password + "|" + email + "|" + datetime.now().strftime(Fa01_DATE_FORMAT), AKEY)
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
     print r.content + "\n"
 
-    sys.stdout = old_stdout
-    result_string = result.getvalue()
+    #sys.stdout = old_stdout
+    #result_string = result.getvalue()
 
-    return result_string
+    #return result_string
+    return "aaa"

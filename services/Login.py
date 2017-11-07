@@ -23,7 +23,8 @@ def add_new_user(email, loginData):
     else:
         newUser.id                  = Dbb.generated_key(Type.USER.name, email)
         #0 password, 1 email_token, 2 date, 3 email_user
-        newUser._secret_password    = Security.encrypt_with_security_level(loginData[0], SecurityLevel.LOGGED)
+        # TODO: SHA256
+        newUser._secret_password    = Security.encrypt(loginData[0], Security.AKEY)
         Dbb.store_collection(Type.USER.name, email, newUser.__dict__)
 
         return (Error.SUCCESS, User().__dict__)
@@ -56,7 +57,8 @@ def login(from_error, request):
 
     if error.value == Error.SUCCESS.value:
         #check password
-        user_decrpt_passw = Security.decrypt_with_security_level(user._secret_password, SecurityLevel.LOGGED)
+        #TODO sha256
+        user_decrpt_passw = Security.decrypt(user._secret_password, Security.AKEY)
 
         #0 password, 1 email_token, 2 date, 3 email_user
         if token_decrpt_passw[0] == user_decrpt_passw:
@@ -91,29 +93,33 @@ def delete_account(from_error, request):
         return from_error
 
 def perform_check_validity(from_error, request, callBack, login_request):
-    if from_error == Error.SUCCESS:
-        #0 password, 1 email_token, 2 date, 3 email_user
-        password    = login_request[0]
-        token_email = login_request[1]
-        user_email  = login_request[3]
+    try:
+        if from_error == Error.SUCCESS:
+            #0 secretKEY, 1 password, 2 email_token, 3 date, 4 email_user
+            password    = login_request[1]
+            token_email = login_request[2]
+            user_email  = login_request[4]
 
-        if token_email == user_email:
-            #Validation email format
-            if not re.match(r"[^@]+@[^@]+\.[^@]+", user_email):
-                return (Error.INVALID_USER_EMAIL, User().__dict__)
+            if token_email == user_email:
+                #Validation email format
+                if not re.match(r"[^@]+@[^@]+\.[^@]+", user_email):
+                    return (Error.INVALID_USER_EMAIL, User().__dict__)
 
-            #Validation password format. Note: vérifie d'abord que l'email n'existe pas.
-            if not re.match(r"^(?=.*?\d)(?=.*?[A-Z])(?=.*?[a-z])[A-Za-z\d]{10,}$", password):
-                return (Error.INVALID_USER_PASSWORD, User().__dict__)
+                #Validation password format. Note: vérifie d'abord que l'email n'existe pas.
+                if not re.match(r"^(?=.*?\d)(?=.*?[A-Z])(?=.*?[a-z])[A-Za-z\d]{10,}$", password):
+                    return (Error.INVALID_USER_PASSWORD, User().__dict__)
 
-            #Validation uniquness
-            return callBack(user_email, login_request)
+                #Validation uniquness
+                return callBack(user_email, login_request)
+            else:
+                #token invalid. Email n'est pas retrouvé.
+                return (Error.INVALID_TOKEN, User().__dict__)
         else:
-            #token invalid. Email n'est pas retrouvé.
-            return (Error.INVALID_TOKEN, User().__dict__)
-    else:
-        # erreur déjà présente. Pas de check
-        return (from_error, User().__dict__)
+            # erreur déjà présente. Pas de check
+            return (from_error, User().__dict__)
+    except Exception as e:
+        print(e)
+        return (Error.INVALID_TOKEN, User().__dict__)
 
 def login_request_from_data(request, SecurityLevel):
     error, data = validate_json(request, {LR.loginrequest.name : {LR.cryptpassword.name : "", LR.email.name : ""}})
@@ -125,7 +131,7 @@ def login_request_from_data(request, SecurityLevel):
         if set((LR.cryptpassword.name, LR.email.name)) <= set(login_request):
             crypt_passw         = login_request[LR.cryptpassword.name]
             email               = login_request[LR.email.name]
-            decry_passw         = Security.decrypt_with_security_level(crypt_passw, lvSecurity=SecurityLevel)
+            decry_passw         = Security.decrypt(crypt_passw, Security.AKEY)
             decrpt_passw        = decry_passw.rsplit('|')
             decrpt_passw.append(email)
 
