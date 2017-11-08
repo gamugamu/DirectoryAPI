@@ -71,10 +71,14 @@ def encrypt(message, passphrase):
     return base64.b64encode(IV + aes.encrypt(pad(message)))
 
 def decrypt(encrypted, passphrase):
-    encrypted = base64.b64decode(encrypted)
-    IV = encrypted[:BLOCK_SIZE]
-    aes = AES.new(passphrase, AES.MODE_CFB, IV, segment_size=128)
-    return unpad(aes.decrypt(encrypted[BLOCK_SIZE:]))
+    try:
+        encrypted = base64.b64decode(encrypted)
+        IV = encrypted[:BLOCK_SIZE]
+        aes = AES.new(passphrase, AES.MODE_CFB, IV, segment_size=128)
+        return unpad(aes.decrypt(encrypted[BLOCK_SIZE:]))
+    except Exception as e:
+        print(e)
+        return ""
 
 def check_if_token_allow_access(request, securityLvl):
     # demande de token

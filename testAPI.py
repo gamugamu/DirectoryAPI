@@ -53,11 +53,11 @@ g_p = {"filepayload" : {"type" : "", "name" : "", "parentId" : "", "uid" :"", "o
 def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "performtest ", urlRoot, version_API
     # Store the reference, in case you want to show things again in standard output
-    old_stdout = sys.stdout
+    #old_stdout = sys.stdout
 
     # This variable will store everything that is sent to the standard output
-    result = StringIO()
-    sys.stdout = result
+    #result = StringIO()
+    #sys.stdout = result
 
     url = urlRoot + "rest/" + version_API + "/"
     print AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT)
@@ -188,7 +188,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "\n==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
 
-    data = {"filetype" : {"type" : 1, "name" : "YELLOW", "parentId" : ""}}
+    data = {"filetype" : {"type" : 1, "name" : "groupmdBurst", "parentId" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
 
@@ -341,7 +341,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
     print r.content + "\n"
 
-    sys.stdout = old_stdout
-    result_string = result.getvalue()
-
-    return result_string
+    #sys.stdout = old_stdout
+    #result_string = result.getvalue()
+    return "done"
+    #return result_string
