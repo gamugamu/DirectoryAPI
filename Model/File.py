@@ -23,15 +23,10 @@ class FileHeader(FileID):
 
     @staticmethod
     def dictionnary_to_fileHeader(dict):
-        try:
-            print "DICT***", dict
-            file            = bunchify(dict)
-            print "FILE***", file
-            file.childsId   = file.childsId.split("|")
-            return file
-        except Exception as e:
-            print "exception", e
-            return None
+        file            = bunchify(dict)
+        file.childsId   = file.childsId.split("|")
+        return file
+
 
     @staticmethod
     def fileHeader_to_dictionnary(file_header):
