@@ -53,11 +53,11 @@ g_p = {"filepayload" : {"type" : "", "name" : "", "parentId" : "", "uid" :"", "o
 def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "performtest ", urlRoot, version_API
     # Store the reference, in case you want to show things again in standard output
-    old_stdout = sys.stdout
+    #old_stdout = sys.stdout
 
     # This variable will store everything that is sent to the standard output
-    result = StringIO()
-    sys.stdout = result
+    #result = StringIO()
+    #sys.stdout = result
 
     url = urlRoot + "rest/" + version_API + "/"
     print AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT)
@@ -341,6 +341,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
     print r.content + "\n"
 
-    sys.stdout = old_stdout
-    result_string = result.getvalue()
-    return result_string
+    #sys.stdout = old_stdout
+    #result_string = result.getvalue()
+    #return result_string
+    return "doen"
