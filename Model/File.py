@@ -24,6 +24,7 @@ class FileHeader(FileID):
     @staticmethod
     def dictionnary_to_fileHeader(dict):
         try:
+            print "DICT***", dict
             file            = bunchify(dict)
             file.childsId   = file.childsId.split("|")
             return file
