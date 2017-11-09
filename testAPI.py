@@ -259,7 +259,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     data = json.loads(r.content)
 
     print "==========" + url + "get headers " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"fileids" : [MAIN_GROUP_ID, file2_id, file1_id]}
+    data = {"fileids" : [MAIN_GROUP_ID]}
     r = requests.post(url + "filesheader", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
