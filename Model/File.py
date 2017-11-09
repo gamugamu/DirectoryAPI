@@ -26,6 +26,7 @@ class FileHeader(FileID):
         try:
             print "DICT***", dict
             file            = bunchify(dict)
+            print "FILE***", file
             file.childsId   = file.childsId.split("|")
             return file
         except Exception as e:
