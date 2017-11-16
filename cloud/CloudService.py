@@ -339,7 +339,7 @@ class CloudService:
                 return Error.SUCCESS, bucket, uri_path
 
             except Exception as e:
-                print "EXCEPTION: ", e, key, "buck is not from graph"
+                print "EXCEPTION: ", e, "buck is not from graph"
                 return Error.REDIS_KEY_UNKNOWN, None, ""
 
     def graph(self, from_error, request, owner_id):

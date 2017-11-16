@@ -65,10 +65,11 @@ class Error(Enum):
             }
         desc                = ErrorDescription()
         desc.code           = error.value
-        desc.description    = description[error.value]
+        desc.description    = description[error.value] + ErrorDescription.EXTRA_DESCRIPTION_ERROR
 
         return desc
 
 class ErrorDescription:
     code        = 0
     description = ""
+    EXTRA_DESCRIPTION_ERROR = "*"

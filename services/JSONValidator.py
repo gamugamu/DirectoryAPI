@@ -1,10 +1,11 @@
 # coding: utf8
 from flask import request
-from Error import Error
-
+from Error import Error, ErrorDescription
 import json
 
 def validate_json(request, graph):
+    ErrorDescription.EXTRA_DESCRIPTION_ERROR = ""
+    
     try:
         data  = request.get_json()
         error = iterate_through_graph(data, graph)
@@ -18,6 +19,7 @@ def validate_json(request, graph):
 def iterate_through_graph(data, graph):
     for key, value in graph.items():
         if (key in data) == False:
+            ErrorDescription.EXTRA_DESCRIPTION_ERROR = " | Key missing: " + key
             return Error.INVALID_JSON_TYPE
         else:
             if type(value) == dict:
