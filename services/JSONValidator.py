@@ -18,7 +18,6 @@ def validate_json(request, graph):
 def iterate_through_graph(data, graph):
     for key, value in graph.items():
         if (key in data) == False:
-            print "KEY NOT FOUND ", key
             return Error.INVALID_JSON_TYPE
         else:
             if type(value) == dict:

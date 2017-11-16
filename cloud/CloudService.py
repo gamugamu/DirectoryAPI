@@ -33,12 +33,19 @@ class CloudService:
 
     def create_file(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
-            error, data = validate_json(request, {"filetype": {"name" : "", "type" : "", "parentId" : ""}})
+            error, data = validate_json(request, {"payload": {
+                "name" : "",
+                "type" : "",
+                "parentId" : "",
+                "title" : "",
+                "payload" : ""}})
 
             if error == Error.SUCCESS:
-                file_name = data["filetype"]["name"]
-                file_type = data["filetype"]["type"]
-                parent_id = data["filetype"]["parentId"]
+                data        = data["payload"]
+                file_name   = data["name"]
+                file_type   = data["type"]
+                parent_id   = data["parentId"]
+                payload     = data["payload"]
 
                 if file_type == int(FileType.GROUP):
                     return self.create_new_bucket(file_name, owner_id)
@@ -51,7 +58,7 @@ class CloudService:
                         if file_type == int(FileType.FOLDER):
                             file_name = self.append_as_folder(file_name)
 
-                        return self.create_file_in_folder(bunchify(bucket), owner_id, file_name, uri_path, parent_id, file_type)
+                        return self.create_file_in_folder(bunchify(bucket), owner_id, file_name, uri_path, parent_id, file_type, payload)
                     else:
                         # graph error
                         return error, FilePayload()
@@ -135,11 +142,12 @@ class CloudService:
 
     def get_files_payload(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
-            error, data = validate_json(request, {"fileids": []});
+
+            error, data = validate_json(request, {"filesid": []});
             list_uid = [];
 
             if error == Error.SUCCESS:
-                for uid in data["fileids"]:
+                for uid in data["filesid"]:
                     value = Dbb.collection_for_Pattern("*" + uid)
 
                     if value is not None:
@@ -151,6 +159,7 @@ class CloudService:
                 else:
                     return Error.SUCCESS, list_uid
             else:
+                print "bad json", error
                 return error, FilePayload().__dict__
         else:
             return error, FilePayload().__dict__
@@ -205,7 +214,7 @@ class CloudService:
         #les suppressions ont réussies
         return Error.SUCCESS
 
-    def create_file_in_folder(self, bucket, owner_id, file_name, uri_path, parentId, file_type):
+    def create_file_in_folder(self, bucket, owner_id, file_name, uri_path, parentId, file_type, payload):
         if bucket is not None:
             uri_path      = self.append_path(uri_path, file_name)
             is_entry_already_exist = Dbb.is_key_exist_forPattern("*|" + uri_path + "|*")
@@ -223,7 +232,8 @@ class CloudService:
                                         type      = file_type,
                                         date      = generate_date_now(),
                                         owner     = [owner_id],
-                                        parentId  = parentId)
+                                        parentId  = parentId,
+                                        payload   = payload)
 
                 redis_id            = "|" + uri_path + "|" + file_id
                 parent_path_key     = Dbb.keys(pattern = "*" + parentId + "*")

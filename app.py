@@ -182,7 +182,7 @@ def files_payload():
     error, files_payload    = cloud.get_files_payload(error, request, user_id)
     errorDesc               = Security.Error.asDescription(error)
 
-    return json.dumps({"error" : errorDesc.__dict__, "filesheader" : files_payload})
+    return json.dumps({"error" : errorDesc.__dict__, "filespayload" : files_payload})
 
 @app.route(VERSION_URI + 'graph', methods=['POST'])
 def graph():
