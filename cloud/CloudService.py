@@ -107,7 +107,6 @@ class CloudService:
                 else:
                     pattern_key = "*_|*" + data["uid"]
                     key         = Dbb.value_for_key(key=pattern_key)
-                    print "UUUUUU ", key
 
                     if key is not None:
                         key = key.next()
@@ -226,9 +225,6 @@ class CloudService:
         if bucket is not None:
             uri_path      = self.append_path(uri_path, file_name)
             is_entry_already_exist = Dbb.is_key_exist_forPattern("*|" + uri_path + "|*")
-            print "CREATE -> ", uri_path
-            if "yellow_file" in uri_path:
-                print "-------------- SUSPECT"
 
             # Si il n'existe pas d'entrée, alors on peux créer le fichier
             if is_entry_already_exist == False:
@@ -250,7 +246,6 @@ class CloudService:
                 redis_id            = uri_path + "|" + file_id
                 parent_path_key     = Dbb.keys(pattern = "*_|*" + parentId + "*")
                 parent              = bunchify(Dbb.collection_for_Key(key=parent_path_key[0]))
-                print "X--->", parent_path_key
 
                 # store_file
                 Dbb.store_collection(FileType(int(file_type)).name, "|" + redis_id, file_.__dict__)
@@ -289,7 +284,7 @@ class CloudService:
 
                 #update
                 key = Dbb.keys(file_pattern)
-                print "U----->", keys
+
                 Dbb.remove_with_key_pattern(file_pattern)
                 self.remove_from_history(key[0])
 
@@ -304,7 +299,6 @@ class CloudService:
     def get_file_by_name(self, file_name):
         file_       = {}
         group_key   = Dbb.keys(pattern="*|" + file_name + "|*")
-        print "Z------> ", group_key
 
         if len(group_key) > 0:
             file_ = Dbb.collection_for_Key(key=group_key[0])
@@ -355,7 +349,7 @@ class CloudService:
 
                 bucket_key_name      = t_key[0].split("|")[1].split("/")[0]
                 bucket_full_key_name = Dbb.keys(pattern= "*|" + bucket_key_name + "|*")[0];
-                print "G -----> ", bucket_full_key_name
+
                 bucket               = Dbb.collection_for_Key(key=bucket_full_key_name)
                 uri_path             = t_key[0].split("|")[1]
 
@@ -387,12 +381,11 @@ class CloudService:
 
     def recurse_graph(self, file_id, max_depht, incr_deph):
         file_full_key_name = Dbb.keys(pattern="*_|*" + file_id)
-        print "R----> ", file_full_key_name
+
         try:
             # retrouve le bon bucket et renvoie l'uri.
             file_base_key_name  = file_full_key_name[0].split("|")[1]
             graph_keys          = Dbb.keys(pattern= "*_|*" + file_base_key_name + "*");
-            print "G----> ", graph_keys
 
             full_graph  = {}
             for x in graph_keys:
@@ -417,7 +410,7 @@ class CloudService:
 
     def history(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
-            print "*** ", request.get_json()
+
             error, data = validate_json(request, {})
 
             if data is not None:
