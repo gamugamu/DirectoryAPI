@@ -131,3 +131,8 @@ def hset(key="", subKey="", sort_value=""):
 
 def srem(member="", key=""):
     r.hset(member, key)
+
+##### SORT
+
+def sort(member="", by="", desc=False):
+    return r.sort(name=member, by=by, desc=desc)

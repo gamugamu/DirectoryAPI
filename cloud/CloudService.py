@@ -403,10 +403,10 @@ class CloudService:
 
 ################# HISTORY ######################
     def sort_for_history(self, key, creation_date):
-        Dbb.add_for_sorting("history", "H_" + key, "date", creation_date)
+        Dbb.add_for_sorting(self.generate_history_key(key), "H_" + key, "date", creation_date)
 
     def remove_from_history(self, key):
-        Dbb.remove_from_sorting("history", "H_" + key)
+        Dbb.remove_from_sorting(self.generate_history_key(key), "H_" + key)
 
     def history(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
@@ -425,6 +425,7 @@ class CloudService:
                     # rappel 0: type de fichier, 1:path, 2:uid
                     #Note: mauvaise implémentation zadd aurait été meilleur
 
+                print "RESULT? ", Dbb.sort(member= self.generate_history_key(by_group), by="*->date", desc=False)
                 return  Error.FILE_NO_PARENT_ID, ""
             else:
                 print "NOT IMPLEMENTED"
@@ -434,3 +435,11 @@ class CloudService:
 
         else:
             return from_error, ""
+
+    def generate_history_key(self, key):
+        print "KEY ", key
+        key         = key.split("|")[0] # ne devrait jms planter
+        root_bucket = key.split("/")[0] # ne devrait jms planter
+
+        print "ROOOOOOT ", root_bucket
+        return "history_" +  root_bucket
