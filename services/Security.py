@@ -3,6 +3,7 @@ import datetime
 from datetime import datetime, timedelta
 import base64
 import uuid
+import time
 
 from enum import Enum
 from Crypto import Random
@@ -185,4 +186,4 @@ def token_from_header(request):
     return request.headers[TOKEN_HEADER]
 
 def generate_date_now():
-    return datetime.now().strftime(Fa01_DATE_FORMAT)
+    return datetime.now().strftime(Fa01_DATE_FORMAT), time.time()

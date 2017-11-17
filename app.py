@@ -149,9 +149,10 @@ def delete_file():
     securityLvl         = Security.SecurityLevel.LOGGED
     error               = Security.check_if_token_allow_access(request, securityLvl)
     user_id             = Security.user_id_from_request(request)
+    print "A ************** ", error
     error               = cloud.delete_file(error, request, user_id)
+    print "************** ", error
     errorDesc           = Security.Error.asDescription(error)
-
     return json.dumps({"error" : errorDesc.__dict__})
 
 @app.route(VERSION_URI + 'modifyfile', methods=['POST'])
@@ -190,6 +191,16 @@ def graph():
     error                   = Security.check_if_token_allow_access(request, securityLvl)
     user_id                 = Security.user_id_from_request(request)
     error, graph            = cloud.graph(error, request, user_id)
+    errorDesc               = Security.Error.asDescription(error)
+
+    return json.dumps({"error" : errorDesc.__dict__, "graph" : graph})
+
+@app.route(VERSION_URI + 'history', methods=['POST'])
+def history():
+    securityLvl             = Security.SecurityLevel.LOGGED
+    error                   = Security.check_if_token_allow_access(request, securityLvl)
+    user_id                 = Security.user_id_from_request(request)
+    error, graph            = cloud.history(error, request, user_id)
     errorDesc               = Security.Error.asDescription(error)
 
     return json.dumps({"error" : errorDesc.__dict__, "graph" : graph})

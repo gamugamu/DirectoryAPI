@@ -311,6 +311,8 @@ commande| data
 * **En cas de succées**, retourne un [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success] et la liste des [[**#Ia04**:FilePayload](#ia04-filepayload)] récupérés.
 * **En cas d’échec**, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur.
 
+---
+
 ## GRAPH
 
 Renvoie la hierachie d'une collection de documents.
@@ -330,6 +332,19 @@ commande| data
 ### #SkD01
 * **En cas de succées**, retourne le graph des fichiers enfants en liste hierarchique. [**#Da00**:Error](#da00-error)[**code**: [**#Ea01:**](#ea01-status)success] et la liste des [[**#Ia04**:FilePayload](#ia04-filepayload)] récupérés.
 * **En cas d’échec**, retourne un [**#Da00**:Error](#da00-error) relatif à l’erreur et un graph vide.
+
+---
+
+## HISTORY
+
+Renvoie l'historique de documents par utilisateur.
+
+commande| data
+------- | -------------
+{: .uri } **URI** | [root]/rest/[v]/history
+{: .header } **HEADER** | \{**token**: [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right**: >= logged]}
+{: .post } **POST** | {**option-filter**: [[**#Df01:**OptionFilter](#df01-optionfilter)]}
+{: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error),  **filesheader**: [[**#Ia03:**FileHeader](#ia03-fileheader), **iterator**: [**#dg01**:Iterator](#dg01-iterator)]}
 
 ---
 # Datastructures
@@ -369,6 +384,19 @@ commande| data
 ---|-- | ---|---------
 {.row_30_px} **1** | owner | L’id de la personne concernée par la règle.  | [**#Dd01**:User](#dd01-user)[id]
 **2** | permission | La permission sur le document. | [**#Ec01**:FilePermission](#ec01-filepermission)
+
+## #Df01: OptionFilter
+&#8203; |key| description | type
+---|-- | ---|---------
+{.row_30_px} **1** | by_date | Par défault renvoie les documents par date  | Bool
+{.row_30_px} **2** | by_group | Le nom du groupe   | String 
+
+## #Dg01: Iterator
+&#8203; |key| description | type
+---|-- | ---|---------
+{.row_30_px} **1** | elmts_by_page | Le nombre d'éléments renvoyés par page | Int
+**2** | iteration | L'itération en cours  | Int
+**3** | max_iteration | Le nombre total de pages  | Int
 
 ## #Ia01: FileType
 &#8203; |key| description | type

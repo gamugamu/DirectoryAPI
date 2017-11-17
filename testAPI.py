@@ -53,11 +53,11 @@ g_p = {"filepayload" : {"type" : "", "name" : "", "parentId" : "", "uid" :"", "o
 def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "performtest ", urlRoot, version_API
     # Store the reference, in case you want to show things again in standard output
-    old_stdout = sys.stdout
+    #old_stdout = sys.stdout
 
     # This variable will store everything that is sent to the standard output
-    result = StringIO()
-    sys.stdout = result
+    #result = StringIO()
+    #sys.stdout = result
 
     url = urlRoot + "rest/" + version_API + "/"
     print AKEY + "|" + datetime.now().strftime(Fa01_DATE_FORMAT)
@@ -188,7 +188,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "\n==========" + url + "create GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print  color.BOLD + color.PURPLE + "[#SfP01] [#SfD01] [#SfR01]" + color.END
 
-    data = {"filetype" : {"type" : 1, "name" : "groupmdBurst", "parentId" : ""}}
+    data = {"payload" : {"type" : 1, "name" : "groupmdBurst", "title" : "", "parentId" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
 
@@ -199,7 +199,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     e       = iterate_through_graph(data, dict(g_e, **g_p))
     print data
     print "[#SfD01] datastructure ", e.value == Error.SUCCESS.value
-    data    = {"filetype" : {"type" : 6, "name" : "BAD_yellow", "parentId" : ""}}
+    data    = {"payload" : {"type" : 6, "name" : "BAD_yellow", "parentId" : "", "payload" : ""}}
     r       = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data    = json.loads(r.content)
     print r.content + "\n"
@@ -209,7 +209,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
 
 
     print "\n==========" + url + "create File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 2, "name" : "yellow_folder", "parentId" : MAIN_GROUP_ID}}
+    data = {"payload" : {"type" : 2, "name" : "yellow_folder", "parentId" : MAIN_GROUP_ID, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
     file1       = data
@@ -217,7 +217,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print r.content + "\n"
 
     print "\n==========" + url + "create File in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 3, "name" : "yellow_file", "parentId" : MAIN_GROUP_ID}}
+    data = {"payload" : {"type" : 3, "name" : "yellow_file", "parentId" : MAIN_GROUP_ID, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     data = json.loads(r.content)
     file1       = data
@@ -239,14 +239,14 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "========================================="
 
     print "==========" + url + "create File in Group (2)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 3, "name" : "subGreen", "parentId" : MAIN_GROUP_ID}}
+    data = {"payload" : {"type" : 3, "name" : "subGreen", "parentId" : MAIN_GROUP_ID, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
     file2_id = data["filepayload"]["uid"]
 
     print "==========" + url + "create File in Group (3)" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 3, "name" : "subRed", "parentId" : MAIN_GROUP_ID}}
+    data = {"payload" : {"type" : 3, "name" : "subRed", "parentId" : MAIN_GROUP_ID, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data    = json.loads(r.content)
@@ -267,7 +267,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     """
 
     print "==========" + url + "create Folder in Group " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 2, "name" : "fruits", "parentId" : MAIN_GROUP_ID}}
+    data = {"payload" : {"type" : 2, "name" : "fruits", "parentId" : MAIN_GROUP_ID, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
@@ -276,40 +276,40 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     folder_id = data["filepayload"]["uid"]
     print "fffffff", folder_id
     print "==========" + url + "create file in Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 3, "name" : "pomme", "parentId" : folder_id}}
+    data = {"payload" : {"type" : 3, "name" : "pomme", "parentId" : folder_id, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
 
     print "==========" + url + "create Folder in Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     print "legumes", folder_id
-    data = {"filetype" : {"type" : 2, "name" : "legumes", "parentId" : folder_id}}
+    data = {"payload" : {"type" : 2, "name" : "legumes", "parentId" : folder_id, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
     folder2_id = data["filepayload"]["uid"]
 
     print "==========" + url + "create file in Folder/Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 3, "name" : "celeri", "parentId" : folder2_id}}
+    data = {"payload" : {"type" : 3, "name" : "celeri", "parentId" : folder2_id, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
 
     print "==========" + url + "create file in Folder/Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 3, "name" : "oignon", "parentId" : folder2_id}}
+    data = {"payload" : {"type" : 3, "name" : "oignon", "parentId" : folder2_id, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
 
     print "==========" + url + "create folder to Folder/Folder/Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 2, "name" : "dessert", "parentId" : folder2_id}}
+    data = {"payload" : {"type" : 2, "name" : "dessert", "parentId" : folder2_id, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
     folder3_id = data["filepayload"]["uid"]
 
     print "==========" + url + "create file in Folder/Folder/Folder " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
-    data = {"filetype" : {"type" : 2, "name" : "foretNoire", "parentId" : folder3_id}}
+    data = {"payload" : {"type" : 2, "name" : "foretNoire", "parentId" : folder3_id, "title" : "", "payload" : ""}}
     r = requests.post(url + "createfile", headers=headers_token, data=json.dumps(data))
     print r.content + "\n"
     data = json.loads(r.content)
@@ -343,6 +343,7 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     r = requests.post(url + "login", headers=headers_token, data=json.dumps({"loginrequest" : {"email" : email , "cryptpassword" : crypted_password}}))
     print r.content + "\n"
 
-    sys.stdout = old_stdout
-    result_string = result.getvalue()
-    return result_string
+    #sys.stdout = old_stdout
+    #result_string = result.getvalue()
+    #return result_string
+    return "done"

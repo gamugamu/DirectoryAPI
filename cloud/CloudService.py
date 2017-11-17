@@ -88,6 +88,8 @@ class CloudService:
                     file_name = data["fileid"]["name"]
                     self.remove_file_from_parent(file_id)
                     return Error.SUCCESS
+            else:
+                return error
         else:
             return from_error
 
@@ -103,8 +105,9 @@ class CloudService:
                 if len(data["uid"]) != 32: #uuid lenght
                     return Error.REDIS_KEY_UNKNOWN
                 else:
-                    pattern_key = "*" + data["uid"]
+                    pattern_key = "*_|*" + data["uid"]
                     key         = Dbb.value_for_key(key=pattern_key)
+                    print "UUUUUU ", key
 
                     if key is not None:
                         key = key.next()
@@ -170,14 +173,18 @@ class CloudService:
         is_entry_already_exist = Dbb.is_key_exist_forPattern("*|" + bucket_name + "|*")
 
         if is_entry_already_exist is False:
-            bucket_id   = uuid.uuid4().hex
+            bucket_id               = uuid.uuid4().hex
+            creation_date, tstamp   = generate_date_now()
             group       = FilePayload(  uid    = bucket_id,
                                         name   = bucket_name,
                                         type   = FileType.GROUP.value,
-                                        date   = generate_date_now(),
+                                        date   = creation_date,
                                         owner  = [owner_id])
+            bucket_id_key = bucket_name + "|" + bucket_id
+
             # store
-            Dbb.store_collection(FileType.GROUP.name, "|" + bucket_name + "|" + bucket_id, group.__dict__)
+            Dbb.store_collection(FileType.GROUP.name, "|" + bucket_id_key, group.__dict__)
+            self.sort_for_history(bucket_id_key, tstamp)
             self.add_user_ownership(owner_id, bucket_id)
 
             return Error.SUCCESS, group
@@ -191,7 +198,8 @@ class CloudService:
         e = self.recursively_delete_all_files_in_bucket(bucket_id)
 
         if e == Error.SUCCESS:
-            Dbb.remove_value_for_key(FileType.GROUP.name, bucket_id)
+            key = Dbb.remove_value_for_key(FileType.GROUP.name, bucket_id)
+            self.remove_from_history(key)
             self.remove_user_ownership(owner_id, bucket_id)
             return Error.SUCCESS
         else:
@@ -218,6 +226,9 @@ class CloudService:
         if bucket is not None:
             uri_path      = self.append_path(uri_path, file_name)
             is_entry_already_exist = Dbb.is_key_exist_forPattern("*|" + uri_path + "|*")
+            print "CREATE -> ", uri_path
+            if "yellow_file" in uri_path:
+                print "-------------- SUSPECT"
 
             # Si il n'existe pas d'entrée, alors on peux créer le fichier
             if is_entry_already_exist == False:
@@ -226,21 +237,24 @@ class CloudService:
                 if parentId == "":
                     parentId = bucket.uid
 
+                creation_date, tstamp = generate_date_now()
                 file_id = uuid.uuid4().hex
                 file_   = FilePayload(  uid       = file_id,
                                         name      = self.sanityse_path(file_name),
                                         type      = file_type,
-                                        date      = generate_date_now(),
+                                        date      = creation_date,
                                         owner     = [owner_id],
                                         parentId  = parentId,
                                         payload   = payload)
 
-                redis_id            = "|" + uri_path + "|" + file_id
-                parent_path_key     = Dbb.keys(pattern = "*" + parentId + "*")
+                redis_id            = uri_path + "|" + file_id
+                parent_path_key     = Dbb.keys(pattern = "*_|*" + parentId + "*")
                 parent              = bunchify(Dbb.collection_for_Key(key=parent_path_key[0]))
+                print "X--->", parent_path_key
 
                 # store_file
-                Dbb.store_collection(FileType(int(file_type)).name, redis_id, file_.__dict__)
+                Dbb.store_collection(FileType(int(file_type)).name, "|" + redis_id, file_.__dict__)
+                self.sort_for_history(redis_id, tstamp)
 
                 #update data
                 bucket.childsId = Dbb.appendedValue(bucket.childsId, file_id)
@@ -274,7 +288,11 @@ class CloudService:
                     file_graph = parent['name']
 
                 #update
+                key = Dbb.keys(file_pattern)
+                print "U----->", keys
                 Dbb.remove_with_key_pattern(file_pattern)
+                self.remove_from_history(key[0])
+
                 parent = FileHeader.fileHeader_to_dictionnary(parent)
 
                 Dbb.store_collection(type_file, "|" + file_graph + "|" + parent["uid"], parent)
@@ -286,6 +304,7 @@ class CloudService:
     def get_file_by_name(self, file_name):
         file_       = {}
         group_key   = Dbb.keys(pattern="*|" + file_name + "|*")
+        print "Z------> ", group_key
 
         if len(group_key) > 0:
             file_ = Dbb.collection_for_Key(key=group_key[0])
@@ -330,9 +349,13 @@ class CloudService:
             #
             try:
                 # retrouve le bon bucket et renvoie l'uri.
-                t_key                = Dbb.keys(pattern= "*" + parent_id);
+                # Note: *_|* permet de séparer les group et folder des clès de
+                # SORT par date.
+                t_key                = Dbb.keys(pattern= "*_|*" + parent_id);
+
                 bucket_key_name      = t_key[0].split("|")[1].split("/")[0]
                 bucket_full_key_name = Dbb.keys(pattern= "*|" + bucket_key_name + "|*")[0];
+                print "G -----> ", bucket_full_key_name
                 bucket               = Dbb.collection_for_Key(key=bucket_full_key_name)
                 uri_path             = t_key[0].split("|")[1]
 
@@ -363,12 +386,13 @@ class CloudService:
         return from_error, ""
 
     def recurse_graph(self, file_id, max_depht, incr_deph):
-        file_full_key_name = Dbb.keys(pattern="*" + file_id)
-
+        file_full_key_name = Dbb.keys(pattern="*_|*" + file_id)
+        print "R----> ", file_full_key_name
         try:
             # retrouve le bon bucket et renvoie l'uri.
             file_base_key_name  = file_full_key_name[0].split("|")[1]
-            graph_keys          = Dbb.keys(pattern= "*|" + file_base_key_name + "*");
+            graph_keys          = Dbb.keys(pattern= "*_|*" + file_base_key_name + "*");
+            print "G----> ", graph_keys
 
             full_graph  = {}
             for x in graph_keys:
@@ -383,3 +407,37 @@ class CloudService:
         except Exception as e:
             print "EXCEPTION: ", e, "data is not from graph"
             return Error.REDIS_KEY_UNKNOWN, ""
+
+################# HISTORY ######################
+    def sort_for_history(self, key, creation_date):
+        Dbb.add_for_sorting("history", "H_" + key, "date", creation_date)
+
+    def remove_from_history(self, key):
+        Dbb.remove_from_sorting("history", "H_" + key)
+
+    def history(self, from_error, request, owner_id):
+        if from_error == Error.SUCCESS:
+            print "*** ", request.get_json()
+            error, data = validate_json(request, {})
+
+            if data is not None:
+                option_filter   = data.get("option-filter")
+                by_group        = option_filter.get("by_group")
+                hist_key        = Dbb.keys(pattern= "*|" + by_group + "/*");
+                print "FIND GROUP"
+                full_graph  = {}
+                for x in hist_key:
+                    print "KEY FOUND ", x
+
+                    # rappel 0: type de fichier, 1:path, 2:uid
+                    #Note: mauvaise implémentation zadd aurait été meilleur
+
+                return  Error.FILE_NO_PARENT_ID, ""
+            else:
+                print "NOT IMPLEMENTED"
+                # recherche de base, ce que l'utilisateur a créé
+
+                return from_error, ""
+
+        else:
+            return from_error, ""

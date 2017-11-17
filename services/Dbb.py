@@ -1,6 +1,7 @@
 # coding: utf8
 import redis
 import os
+from decimal import Decimal
 
 if "REDIS_URL" in os.environ:
     r = redis.from_url(os.environ['REDIS_URL'])
@@ -34,7 +35,11 @@ def store_collection(typeKey="", key="", storeDict=""):
     if typeKey != "" :
         key = generated_key(typeKey, key)
 
+    if "yellow_file" in key:
+        print "+++++-------------- SUSPECT", key
+
     r.hmset(key, storeDict)
+    return key
 
 def collection_for_Pattern(pattern=""):
     value = value_for_key(key=pattern)
@@ -80,9 +85,12 @@ def remove_value_for_key(typeKey="", key=""):
     if key == None:
         return False
     elif typeKey == "":
-        return r.delete(key)
+        r.delete(key)
+        return key
     else:
-        return r.delete(generated_key(typeKey, key))
+        key = generated_key(typeKey, key)
+        r.delete(key)
+        return key
 
 def remove_with_key_pattern(p_key=""):
     did_deleted = False
@@ -105,3 +113,21 @@ def removedValue(data, value):
         data = data[:-1]
 
     return data
+
+##### LIST
+
+def add_for_sorting(member="", key="", subKey="", sort_value=""):
+    sadd(member, key)
+    hset(key, subKey, Decimal(sort_value))
+
+def remove_from_sorting(member="", key="", subKey="", sort_value=""):
+    srem(member, key)
+
+def sadd(member="", key=""):
+    r.sadd(member, key)
+
+def hset(key="", subKey="", sort_value=""):
+    r.hset(key, subKey, sort_value)
+
+def srem(member="", key=""):
+    r.hset(member, key)
