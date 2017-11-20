@@ -35,9 +35,6 @@ def store_collection(typeKey="", key="", storeDict=""):
     if typeKey != "" :
         key = generated_key(typeKey, key)
 
-    if "yellow_file" in key:
-        print "+++++-------------- SUSPECT", key
-
     r.hmset(key, storeDict)
     return key
 

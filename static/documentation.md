@@ -343,7 +343,7 @@ commande| data
 ------- | -------------
 {: .uri } **URI** | [root]/rest/[v]/history
 {: .header } **HEADER** | \{**token**: [**#Fb02**:TokenFormat](#fb02-tokenformat)[**right**: >= logged]}
-{: .post } **POST** | {**option-filter**: [[**#Df01:**OptionFilter](#df01-optionfilter)]}
+{: .post } **POST** | {**option**: [[**#Df01:**Option](#df01-option)]}
 {: .return } **RETURN**  | \{**error**: [**#Da00**:Error](#da00-error),  **filesheader**: [[**#Ia03:**FileHeader](#ia03-fileheader), **iterator**: [**#dg01**:Iterator](#dg01-iterator)]}
 
 ---
@@ -385,11 +385,11 @@ commande| data
 {.row_30_px} **1** | owner | L’id de la personne concernée par la règle.  | [**#Dd01**:User](#dd01-user)[id]
 **2** | permission | La permission sur le document. | [**#Ec01**:FilePermission](#ec01-filepermission)
 
-## #Df01: OptionFilter
+## #Df01: Option
 &#8203; |key| description | type
 ---|-- | ---|---------
-{.row_30_px} **1** | by_date | Par défault renvoie les documents par date  | Bool
-{.row_30_px} **2** | by_group | Le nom du groupe   | String 
+{.row_30_px} **1** | group_name | Le nom du group demandé  | Bool
+**2** | file_payload | Retourne le payload si demandé   | Bool
 
 ## #Dg01: Iterator
 &#8203; |key| description | type

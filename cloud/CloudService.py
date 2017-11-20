@@ -21,6 +21,9 @@ from Model.File import FilePayload, FileHeader
 import operator
 import dpath.util
 
+HISTORY_TAG     = "H_"
+GROUP_PATTERN   = "*_|*"
+
 class CloudService:
 
     def __init__(self):
@@ -105,7 +108,7 @@ class CloudService:
                 if len(data["uid"]) != 32: #uuid lenght
                     return Error.REDIS_KEY_UNKNOWN
                 else:
-                    pattern_key = "*_|*" + data["uid"]
+                    pattern_key = GROUP_PATTERN + data["uid"]
                     key         = Dbb.value_for_key(key=pattern_key)
 
                     if key is not None:
@@ -244,7 +247,7 @@ class CloudService:
                                         payload   = payload)
 
                 redis_id            = uri_path + "|" + file_id
-                parent_path_key     = Dbb.keys(pattern = "*_|*" + parentId + "*")
+                parent_path_key     = Dbb.keys(pattern = GROUP_PATTERN + parentId + "*")
                 parent              = bunchify(Dbb.collection_for_Key(key=parent_path_key[0]))
 
                 # store_file
@@ -345,7 +348,7 @@ class CloudService:
                 # retrouve le bon bucket et renvoie l'uri.
                 # Note: *_|* permet de séparer les group et folder des clès de
                 # SORT par date.
-                t_key                = Dbb.keys(pattern= "*_|*" + parent_id);
+                t_key                = Dbb.keys(pattern= GROUP_PATTERN + parent_id);
 
                 bucket_key_name      = t_key[0].split("|")[1].split("/")[0]
                 bucket_full_key_name = Dbb.keys(pattern= "*|" + bucket_key_name + "|*")[0];
@@ -380,12 +383,12 @@ class CloudService:
         return from_error, ""
 
     def recurse_graph(self, file_id, max_depht, incr_deph):
-        file_full_key_name = Dbb.keys(pattern="*_|*" + file_id)
+        file_full_key_name = Dbb.keys(pattern=GROUP_PATTERN + file_id)
 
         try:
             # retrouve le bon bucket et renvoie l'uri.
             file_base_key_name  = file_full_key_name[0].split("|")[1]
-            graph_keys          = Dbb.keys(pattern= "*_|*" + file_base_key_name + "*");
+            graph_keys          = Dbb.keys(pattern= GROUP_PATTERN + file_base_key_name + "*");
 
             full_graph  = {}
             for x in graph_keys:
@@ -403,10 +406,13 @@ class CloudService:
 
 ################# HISTORY ######################
     def sort_for_history(self, key, creation_date):
-        Dbb.add_for_sorting(self.generate_history_key(key), "H_" + key, "date", creation_date)
+        Dbb.add_for_sorting(self.generate_history_key(key), HISTORY_TAG + key, "date", creation_date)
 
     def remove_from_history(self, key):
-        Dbb.remove_from_sorting(self.generate_history_key(key), "H_" + key)
+        Dbb.remove_from_sorting(self.generate_history_key(key), HISTORY_TAG + key)
+
+    def key_without_history_tag(self, key):
+        return key.replace(HISTORY_TAG, "")
 
     def history(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
@@ -415,18 +421,22 @@ class CloudService:
 
             if data is not None:
                 option_filter   = data.get("option-filter")
-                by_group        = option_filter.get("by_group")
-                hist_key        = Dbb.keys(pattern= "*|" + by_group + "/*");
-                print "FIND GROUP"
-                full_graph  = {}
-                for x in hist_key:
-                    print "KEY FOUND ", x
+                group_name      = option_filter.get("group_name")
+                want_payload    = option_filter.get("file_payload")
+                list_by_date    = Dbb.sort(member= self.generate_history_key(group_name), by="*->date", desc=False)
 
-                    # rappel 0: type de fichier, 1:path, 2:uid
-                    #Note: mauvaise implémentation zadd aurait été meilleur
+                result = []
 
-                print "RESULT? ", Dbb.sort(member= self.generate_history_key(by_group), by="*->date", desc=False)
-                return  Error.FILE_NO_PARENT_ID, ""
+                for document in list_by_date:
+                    uri_key = self.key_without_history_tag(document)
+                    payload = Dbb.collection_for_Pattern(GROUP_PATTERN + uri_key)
+
+                    if not want_payload:
+                        payload["payload"] = ""
+
+                    result.append(payload)
+
+                return  Error.FILE_NO_PARENT_ID, result
             else:
                 print "NOT IMPLEMENTED"
                 # recherche de base, ce que l'utilisateur a créé
@@ -437,9 +447,7 @@ class CloudService:
             return from_error, ""
 
     def generate_history_key(self, key):
-        print "KEY ", key
-        key         = key.split("|")[0] # ne devrait jms planter
-        root_bucket = key.split("/")[0] # ne devrait jms planter
+        key         = key.split("|")[0]
+        root_bucket = key.split("/")[0]
 
-        print "ROOOOOOT ", root_bucket
         return "history_" +  root_bucket
