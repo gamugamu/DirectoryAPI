@@ -368,8 +368,6 @@ class CloudService:
             error, data = validate_json(request, {"file_id": ""})
 
             if error == Error.SUCCESS:
-                #print data
-
                 file_id = data["file_id"]
                 if file_id == "":
                     return  Error.FILE_NO_PARENT_ID, ""
@@ -436,7 +434,6 @@ class CloudService:
                         if not want_payload:
                             payload["payload"] = ""
 
-                            print "document ", uri_key, "\n", payload, "\n"
                             result.append(payload)
 
                 return  Error.FILE_NO_PARENT_ID, result
