@@ -327,6 +327,12 @@ def performtest(urlRoot=urlRoot, version_API=urlRoot):
     print "folder_id ", folder_id
     print r.content + "\n"
 
+    print "==========" + url + "history" + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
+    data = {"option-filter":{"group_name" : "groupmdBurst"}}
+    r = requests.post(url + "history", headers=headers_token, data=json.dumps(data))
+    print "history ", folder_id
+    print r.content + "\n"
+
     """
     print "==========" + url + "delete GROUP " + color.BOLD + color.PURPLE + "(must succeed)" + color.END + "==========="
     data = {"fileid" : {"type" : 1, "name" : "yellow2", "uid" : group_id}}

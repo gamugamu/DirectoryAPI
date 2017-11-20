@@ -247,16 +247,17 @@ class CloudService:
                                         payload   = payload)
 
                 redis_id            = uri_path + "|" + file_id
-                parent_path_key     = Dbb.keys(pattern = GROUP_PATTERN + parentId + "*")
-                parent              = bunchify(Dbb.collection_for_Key(key=parent_path_key[0]))
+                parent_path_key     = Dbb.keys(pattern = GROUP_PATTERN + parentId + "*")[0]
+                parent              = bunchify(Dbb.collection_for_Pattern(parent_path_key[0]))
 
                 # store_file
                 Dbb.store_collection(FileType(int(file_type)).name, "|" + redis_id, file_.__dict__)
                 self.sort_for_history(redis_id, tstamp)
 
                 #update data
-                bucket.childsId = Dbb.appendedValue(bucket.childsId, file_id)
-                Dbb.store_collection(key=parent_path_key[0], storeDict=unbunchify(bucket))
+                if parent is not None:
+                    parent.childsId = Dbb.appendedValue(bucket.childsId, file_id)
+                    Dbb.store_collection(key=parent_path_key, storeDict=unbunchify(parent))
 
                 return Error.SUCCESS, file_
             else:
@@ -423,7 +424,7 @@ class CloudService:
                 option_filter   = data.get("option-filter")
                 group_name      = option_filter.get("group_name")
                 want_payload    = option_filter.get("file_payload")
-                list_by_date    = Dbb.sort(member= self.generate_history_key(group_name), by="*->date", desc=False)
+                list_by_date    = Dbb.sort(member= self.generate_history_key(group_name), by="*->date", desc=True)
 
                 result = []
 
@@ -431,10 +432,12 @@ class CloudService:
                     uri_key = self.key_without_history_tag(document)
                     payload = Dbb.collection_for_Pattern(GROUP_PATTERN + uri_key)
 
-                    if not want_payload:
-                        payload["payload"] = ""
+                    if payload is not None:
+                        if not want_payload:
+                            payload["payload"] = ""
 
-                    result.append(payload)
+                            print "document ", uri_key, "\n", payload, "\n"
+                            result.append(payload)
 
                 return  Error.FILE_NO_PARENT_ID, result
             else:

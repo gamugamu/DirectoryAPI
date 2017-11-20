@@ -201,4 +201,4 @@ def history():
     error, graph            = cloud.history(error, request, user_id)
     errorDesc               = Security.Error.asDescription(error)
 
-    return json.dumps({"error" : errorDesc.__dict__, "graph" : graph})
+    return json.dumps({"error" : errorDesc.__dict__, "history" : graph})
