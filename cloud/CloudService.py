@@ -153,7 +153,7 @@ class CloudService:
 
             if error == Error.SUCCESS:
                 for uid in data["filesid"]:
-                    value = Dbb.collection_for_Pattern("*" + uid)
+                    value = Dbb.collection_for_Pattern(GROUP_PATTERN + uid)
 
                     if value is not None:
                         value = unbunchify(FileHeader.dictionnary_to_fileHeader(value))
