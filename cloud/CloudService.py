@@ -425,13 +425,19 @@ class CloudService:
                 want_payload    = option_filter.get("file_payload")
                 current_page    = option_filter.get("current_page")
                 # prevent None case
-                current_page    = current_page if current_page is not None else 0
+                current_page    = int(current_page) if current_page is not None else 0
                 total_per_page  = option_filter.get("total_per_page")
                 total_per_page  = total_per_page if total_per_page is not None else 20 # c'est au client de préciser la quantité; pas au serveur
 
                 all_post_cardinality    = Dbb.scard(self.generate_history_key(group_name))
                 max_iteration           = round(float(all_post_cardinality) / float(total_per_page))
-                list_by_date            = Dbb.sort(member= self.generate_history_key(group_name), by="*->date", desc=True, start=current_page, num=total_per_page)
+                start                   = total_per_page * current_page
+                list_by_date            = Dbb.sort(
+                    member  = self.generate_history_key(group_name),
+                    by      = "*->date",
+                    desc    = True,
+                    start   = start,
+                    num     = total_per_page)
                 result      = []
 
                 # renseigne sur le restant de posts à parcourir
@@ -444,7 +450,6 @@ class CloudService:
                     if payload is not None:
                         if not want_payload:
                             payload["payload"] = ""
-
                             result.append(payload)
 
                 return  Error.FILE_NO_PARENT_ID, result, iterator
