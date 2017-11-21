@@ -131,5 +131,8 @@ def srem(member="", key=""):
 
 ##### SORT
 
-def sort(member="", by="", desc=False):
-    return r.sort(name=member, by=by, desc=desc)
+def sort(member="", by="", desc=False, start=None, num= None):
+    return r.sort(name=member, by=by, desc=desc, start=start, num=num)
+
+def scard(name=""):
+    return r.scard(name)

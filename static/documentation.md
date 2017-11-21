@@ -388,8 +388,10 @@ commande| data
 ## #Df01: Option
 &#8203; |key| description | type
 ---|-- | ---|---------
-{.row_30_px} **1** | group_name | Le nom du group demandé  | Bool
-**2** | file_payload | Retourne le payload si demandé   | Bool
+{.row_30_px} **1** | group_name | Le nom du groupe demandé  | Bool
+**2** | total_per_page | le nombre d'éléments par page. Défault à 20   | Int
+**2** | current_page | Les posts pour la page en cours. Défault à 0   | Int
+**3** | file_payload | Retourne le payload si demandé   | Bool
 
 ## #Dg01: Iterator
 &#8203; |key| description | type

@@ -198,7 +198,7 @@ def history():
     securityLvl             = Security.SecurityLevel.LOGGED
     error                   = Security.check_if_token_allow_access(request, securityLvl)
     user_id                 = Security.user_id_from_request(request)
-    error, graph            = cloud.history(error, request, user_id)
+    error, graph, iterator  = cloud.history(error, request, user_id)
     errorDesc               = Security.Error.asDescription(error)
 
-    return json.dumps({"error" : errorDesc.__dict__, "history" : graph})
+    return json.dumps({"error" : errorDesc.__dict__, "history" : graph, "iterator" : iterator})
