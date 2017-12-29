@@ -128,21 +128,24 @@ class CloudService:
 
     def get_files_header(self, from_error, request, owner_id):
         if from_error == Error.SUCCESS:
-            error, data = validate_json(request, {"fileids": []});
+            error, data = validate_json(request, {"filesid": []});
             list_uid = [];
 
-            for uid in data["fileids"]:
-                value = Dbb.collection_for_Pattern("*" + uid)
+            if error == Error.SUCCESS:
+                for uid in data["filesid"]:
+                    value = Dbb.collection_for_Pattern("*_|*" + uid)
 
-                if value is not None:
-                    value = unbunchify(FileHeader.dictionnary_to_fileHeader(value))
-                    value.pop('payload', None) # seul les headers nous interressent
-                    list_uid.append(value)
+                    if value is not None:
+                        value = unbunchify(FileHeader.dictionnary_to_fileHeader(value))
+                        value.pop('payload', None) # seul les headers nous interressent
+                        list_uid.append(value)
 
-            if len(list_uid) == 0:
-                return Error.REDIS_KEY_UNKNOWN, FileHeader().__dict__
+                if len(list_uid) == 0:
+                    return Error.REDIS_KEY_UNKNOWN, FileHeader().__dict__
+                else:
+                    return Error.SUCCESS, list_uid
             else:
-                return Error.SUCCESS, list_uid
+                return error # json key error
         else:
             return from_error, FileHeader().__dict__
 

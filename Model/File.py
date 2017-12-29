@@ -23,8 +23,11 @@ class FileHeader(FileID):
 
     @staticmethod
     def dictionnary_to_fileHeader(dict):
-        file            = bunchify(dict)
-        file.childsId   = file.childsId.split("|")
+        file = bunchify(dict)
+
+        if hasattr(file, 'childsId'):
+            file.childsId   = file.childsId.split("|")
+
         return file
 
 
